@@ -1,3 +1,6 @@
+# Disable echoing of commands
+MAKEFLAGS += --silent
+
 modules := $(wildcard modules/*)
 
 .PHONY: build clean $(modules)
