@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/AlexGustafsson/upmon/core"
-  "os/exec"
+	"os/exec"
 )
 
 // Module is the exported ping module
