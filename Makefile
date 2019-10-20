@@ -1,9 +1,14 @@
-PHONY: build clean
+modules := $(wildcard modules/*)
 
-build: build/upmon
+.PHONY: build clean $(modules)
 
-build/upmon: src/main.go
-	go build -o $@ $<
+build: build/upmon $(modules)
+
+build/upmon: main.go core/module.go
+	go build -o $@ main.go
+
+$(modules):
+	$(MAKE) -C $@
 
 clean:
 	rm -rf build
