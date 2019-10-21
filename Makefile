@@ -13,7 +13,7 @@ build: build/upmon $(modules)
 build/upmon: $(mainSource) $(coreSource)
 	go build -o $@ $(mainSource)
 
-$(modules):
+$(modules): $(coreSource)
 	$(MAKE) -C $@
 
 format: $(source)
