@@ -1,0 +1,12 @@
+logLevel = "debug"
+
+[peers]
+[peers.self]
+  hostname = "0.0.0.0"
+  port = 3660
+  privateKey = ""
+  publicKey = ""
+[peers.test]
+  hostname = "localhost"
+  port = 3661
+  publicKey = ""

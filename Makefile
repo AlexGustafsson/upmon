@@ -8,8 +8,8 @@ source := $(shell find ./ -type f -name '*.go')
 
 build: build/upmon $(modules)
 
-build/upmon: main.go core/module.go
-	go build -o $@ main.go
+build/upmon: main.go config.go core/config.go
+	go build -o $@ main.go config.go
 
 $(modules):
 	$(MAKE) -C $@
