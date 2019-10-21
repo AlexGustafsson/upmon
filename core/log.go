@@ -18,7 +18,7 @@ func log(level string, format string, values ...interface{}) {
 
   var color = 31
   if level == "debug" {
-    color = 32
+    color = 34
   } else if level == "notice" || level == "info" {
     color = 32
   }
