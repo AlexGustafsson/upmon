@@ -5,12 +5,12 @@ import (
 	"github.com/AlexGustafsson/upmon/core"
 	"plugin"
 	"os"
-	"log"
 )
 
 func main() {
 	if len(os.Args) <= 1 {
-		log.Fatal("Expected a command to be given")
+		core.LogError("Expected a command to be given")
+		os.Exit(1)
 	}
 
 	command := os.Args[1]
@@ -19,8 +19,12 @@ func main() {
 		generateKeys()
 	} else if command == "start" {
 		start()
+	} else if command == "help" {
+		printHelp()
 	} else {
-		log.Fatal("Unknown command: ", command)
+		core.LogError("Unknown command: %v", command)
+		printHelp()
+		os.Exit(1)
 	}
 }
 
@@ -40,18 +44,48 @@ func start() {
 			path := os.Args[i]
 			config, err = loadConfig(path)
 		} else if argument == "-d" || argument == "--debug" {
-			i++
-			logLevel = os.Args[i]
+			logLevel = "debug"
 		}
 	}
 
 	if err != nil {
-		log.Fatal("Unable to parse arguments, got error:", err)
+		core.LogError("Unable to parse arguments, got error %v", err)
+		os.Exit(1)
 	}
 
 	if logLevel == "" {
 		config.LogLevel = logLevel
 	}
+
+	module, err := loadModule("./build/modules/ping.so")
+	if err != nil {
+		core.LogError("Unable to load module, got error: %v", err)
+		os.Exit(1)
+	}
+
+	host := new(core.Host)
+	host.Name = "TestHost"
+	host.IP = "localhost"
+	module.CheckStatus(host)
+}
+
+func printHelp() {
+	fmt.Println("Upmon ( \xF0\x9D\x9C\xB6 ) - A cloud-native, distributed uptime monitor written in Go");
+	fmt.Println("");
+	fmt.Println("\x1b[1mVERSION\x1b[0m");
+	fmt.Println("Upmon v0.1.0");
+	fmt.Println("");
+	fmt.Println("\x1b[1mUSAGE\x1b[0m");
+	fmt.Println("$ upmon <command> [arguments]");
+	fmt.Println("");
+	fmt.Println("\x1b[1mCOMMANDS\x1b[0m");
+	fmt.Println("start          Start Upmon");
+	fmt.Println("help           Show this help text");
+	fmt.Println("version        Show current version");
+	fmt.Println("");
+	fmt.Println("\x1b[1mARGUMENTS\x1b[0m");
+	fmt.Println("-c    --config        Specify the config file");
+	fmt.Println("-d    --debug         Run Upmon with debug logging enabled");
 }
 
 func loadModule(path string) (*core.Module, error) {
