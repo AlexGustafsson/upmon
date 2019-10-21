@@ -53,9 +53,12 @@ func start() {
 		os.Exit(1)
 	}
 
-	if logLevel == "" {
+	if logLevel != "" {
 		config.LogLevel = logLevel
+	} else if config.LogLevel == "" {
+		config.LogLevel = "error"
 	}
+	core.SetLogLevel(config.LogLevel)
 
 	module, err := loadModule("./build/modules/ping.so")
 	if err != nil {

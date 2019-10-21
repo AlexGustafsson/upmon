@@ -10,9 +10,15 @@ import (
 
 var mutex sync.Mutex
 var projectRegex = regexp.MustCompile(`upmon/(.*)`)
+var globalSyslogLevel = 3
 
 // Log logs a message with the specified level
 func log(level string, format string, values ...interface{}) {
+  syslogLevel := getSyslogLogLevel(level)
+  if syslogLevel > globalSyslogLevel {
+    return
+  }
+
   now := time.Now()
   formattedTime := now.Format("2006-01-02 15:04:05 MST")
 
@@ -37,6 +43,34 @@ func log(level string, format string, values ...interface{}) {
   fmt.Printf(format, values...)
   fmt.Println()
   mutex.Unlock()
+}
+
+func getSyslogLogLevel(level string) int {
+  switch level {
+  case "emergency":
+    return 0
+  case "alert":
+    return 1
+  case "critical":
+    return 2
+  case "error":
+    return 3
+  case "warning":
+    return 4
+  case "notice":
+    return 5
+  case "info":
+    return 6
+  case "debug":
+    return 7
+  default:
+    return 3
+  }
+}
+
+// SetLogLevel sets the global log level
+func SetLogLevel(level string) {
+  globalSyslogLevel = getSyslogLogLevel(level)
 }
 
 // LogEmergency logs an emergency message
