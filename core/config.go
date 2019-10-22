@@ -2,8 +2,9 @@ package core
 
 // Peer describes the configuration for a peer in the network
 type Peer struct {
-  PrivateKey string
-  PublicKey string
+  Certificate string
+  Key string
+  Fingerprint string
   Hostname string
   Port int
 }
