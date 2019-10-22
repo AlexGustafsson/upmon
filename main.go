@@ -5,6 +5,8 @@ import (
 	"github.com/AlexGustafsson/upmon/core"
 	"plugin"
 	"os"
+	"crypto/sha1"
+	"encoding/base64"
 )
 
 func main() {
@@ -41,12 +43,18 @@ func generateCertificates() {
 		core.LogError("%v", err)
 		os.Exit(1)
 	}
+	fmt.Println("Stored certificate in: server.crt")
 
 	err = writeKey(privateKey, "./server.pem")
 	if err != nil {
 		core.LogError("%v", err)
 		os.Exit(1)
 	}
+	fmt.Println("Stored private key in: server.pem")
+
+	shasum := sha1.Sum(certificateBytes)
+	fingerprint := base64.StdEncoding.EncodeToString(shasum[:])
+	fmt.Println("Fingerprint is:", fingerprint)
 }
 
 func start() {
