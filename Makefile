@@ -1,6 +1,9 @@
 # Disable echoing of commands
 MAKEFLAGS += --silent
 
+CC=clang
+CXX=clang
+
 modules := $(wildcard modules/*)
 source := $(shell find ./ -type f -name '*.go')
 coreSource := $(shell find core -type f -name '*.go')

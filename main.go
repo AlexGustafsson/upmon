@@ -15,8 +15,8 @@ func main() {
 
 	command := os.Args[1]
 
-	if command == "generate-keys" {
-		generateKeys()
+	if command == "generate-certificate" {
+		generateCertificates()
 	} else if command == "start" {
 		start()
 	} else if command == "help" {
@@ -28,9 +28,24 @@ func main() {
 	}
 }
 
-func generateKeys() {
-	fmt.Println("Private Key: xxxx")
-	fmt.Println("Public Key: xxxx")
+func generateCertificates() {
+	privateKey, _, certificateBytes, err := createSelfSignedCertificate("localhost")
+	if err != nil {
+		core.LogError("Unable to create self-signed server certificate, got error: %v", err)
+		os.Exit(1)
+	}
+
+	err = writeCertificate(certificateBytes, "./server.crt")
+	if err != nil {
+		core.LogError("%v", err)
+		os.Exit(1)
+	}
+
+	err = writeKey(privateKey, "./server.pem")
+	if err != nil {
+		core.LogError("%v", err)
+		os.Exit(1)
+	}
 }
 
 func start() {
@@ -82,13 +97,14 @@ func printHelp() {
 	fmt.Println("$ upmon <command> [arguments]");
 	fmt.Println("");
 	fmt.Println("\x1b[1mCOMMANDS\x1b[0m");
-	fmt.Println("start          Start Upmon");
-	fmt.Println("help           Show this help text");
-	fmt.Println("version        Show current version");
+	fmt.Println("start                   Start Upmon");
+	fmt.Println("help                    Show this help text");
+	fmt.Println("version                 Show current version");
+	fmt.Println("generate-certificate    Generate a strong certificate and private key for TLS 1.3");
 	fmt.Println("");
 	fmt.Println("\x1b[1mARGUMENTS\x1b[0m");
-	fmt.Println("-c    --config        Specify the config file");
-	fmt.Println("-d    --debug         Run Upmon with debug logging enabled");
+	fmt.Println("-c    --config          Specify the config file");
+	fmt.Println("-d    --debug           Run Upmon with debug logging enabled");
 }
 
 func loadModule(path string) (*core.Module, error) {
