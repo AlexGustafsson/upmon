@@ -10,6 +10,7 @@ import (
 func main() {
 	if len(os.Args) <= 1 {
 		core.LogError("Expected a command to be given")
+		printHelp()
 		os.Exit(1)
 	}
 
