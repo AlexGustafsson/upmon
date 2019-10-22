@@ -7,6 +7,8 @@ import (
 	"os"
 	"crypto/sha1"
 	"encoding/base64"
+	"crypto/tls"
+	"sync"
 )
 
 func main() {
@@ -84,16 +86,105 @@ func start() {
 	}
 	core.SetLogLevel(config.LogLevel)
 
-	module, err := loadModule("./build/modules/ping.so")
+	self := config.Peers["self"]
+	core.LogDebug("Loading certificate from '%s' and key from '%s'", self.Certificate, self.Key)
+	certificate, err := tls.LoadX509KeyPair(self.Certificate, self.Key)
 	if err != nil {
-		core.LogError("Unable to load module, got error: %v", err)
+		core.LogError("Unable to load TLS certificate and key, got error: %v", err)
 		os.Exit(1)
 	}
 
-	host := new(core.Host)
-	host.Name = "TestHost"
-	host.IP = "localhost"
-	module.CheckStatus(host)
+	tlsConfig := tls.Config{
+		Certificates: []tls.Certificate{certificate},
+		ClientAuth: tls.RequireAnyClientCert,
+		MinVersion: tls.VersionTLS13,
+		InsecureSkipVerify: true,
+	}
+
+  var waitGroup sync.WaitGroup
+
+	waitGroup.Add(1)
+	go listen(tlsConfig, self.Hostname, self.Port, waitGroup)
+
+	waitGroup.Add(1)
+	go connect(tlsConfig, self.Hostname, self.Port, waitGroup)
+
+	waitGroup.Wait()
+}
+
+func connect(tlsConfig tls.Config, hostname string, port int, waitGroup sync.WaitGroup) {
+	defer waitGroup.Done()
+
+	connection, err := tls.Dial("tcp", fmt.Sprintf("%s:%d", hostname, port), &tlsConfig)
+	if err != nil {
+		core.LogError("Unable to connect to peer %v:%v, got error: %v", hostname, port, err)
+		return
+	}
+	defer connection.Close()
+
+	state := connection.ConnectionState()
+	if len(state.PeerCertificates) == 0 {
+		core.LogWarning("Peer from %s sent no certificates, closing connection", connection.RemoteAddr())
+		return
+	} else if len(state.PeerCertificates) != 1 {
+		core.LogWarning("Peer from %s has multiple certificates, closing connection", connection.RemoteAddr())
+		return
+	}
+
+	certificate := state.PeerCertificates[0]
+
+	shasum := sha1.Sum(certificate.Raw)
+	fingerprint := base64.StdEncoding.EncodeToString(shasum[:])
+	core.LogDebug("Peer has the fingerprint fingerprint: %v", fingerprint)
+}
+
+func listen(tlsConfig tls.Config, hostname string, port int, waitGroup sync.WaitGroup) {
+	defer waitGroup.Done()
+
+	listener, err := tls.Listen("tcp", fmt.Sprintf("%s:%d", hostname, port), &tlsConfig)
+	if err != nil {
+		core.LogError("Unable to create TLS server instance, got error: %v", err)
+		return
+	}
+
+	for {
+		connection, err := listener.Accept()
+		if err != nil {
+			core.LogWarning("Unable to accept connection, got error: %v", err)
+		}
+		core.LogDebug("Accepted connection from %s", connection.RemoteAddr())
+
+		tlsConnection, ok := connection.(*tls.Conn)
+		if ok {
+			err := tlsConnection.Handshake()
+			if err != nil {
+				core.LogWarning("Hanshake with peer %v failed", connection.RemoteAddr())
+				continue
+			}
+
+			state := tlsConnection.ConnectionState()
+			if len(state.PeerCertificates) == 0 {
+				core.LogWarning("Peer from %s sent no certificates, closing connection", connection.RemoteAddr())
+				connection.Close()
+				continue
+			} else if len(state.PeerCertificates) != 1 {
+				core.LogWarning("Peer from %s has multiple certificates, closing connection", connection.RemoteAddr())
+				connection.Close()
+				continue
+			}
+
+			certificate := state.PeerCertificates[0]
+
+			shasum := sha1.Sum(certificate.Raw)
+			fingerprint := base64.StdEncoding.EncodeToString(shasum[:])
+			core.LogDebug("Peer has the fingerprint fingerprint: %v", fingerprint)
+		} else {
+			core.LogWarning("Unable to treat connection from peer %v as TLS", connection.RemoteAddr())
+			continue
+		}
+	}
+
+	core.LogNotice("Listening on port %s:%d", hostname, port)
 }
 
 func printHelp() {

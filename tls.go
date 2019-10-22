@@ -3,7 +3,8 @@ package main
 import (
   "crypto/x509"
   "crypto/x509/pkix"
-  "crypto/ed25519"
+  "crypto/ecdsa"
+  "crypto/elliptic"
   "crypto/rand"
   "encoding/pem"
   "math/big"
@@ -15,7 +16,7 @@ import (
 
 // SEE: https://golang.org/src/crypto/tls/generate_cert.go
 
-func createSelfSignedCertificate(hostnames ...string)  (*ed25519.PrivateKey, *x509.Certificate, []byte, error) {
+func createSelfSignedCertificate(hostnames ...string)  (*ecdsa.PrivateKey, *x509.Certificate, []byte, error) {
   serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
   serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
   if err != nil {
@@ -51,13 +52,13 @@ func createSelfSignedCertificate(hostnames ...string)  (*ed25519.PrivateKey, *x5
     return nil, nil, nil, err
   }
 
-  certificateBytes, err := x509.CreateCertificate(rand.Reader, certificate, certificate, privateKey.Public().(ed25519.PublicKey), privateKey)
+  certificateBytes, err := x509.CreateCertificate(rand.Reader, certificate, certificate, privateKey.Public().(ecdsa.PublicKey), privateKey)
   if err != nil {
     core.LogError("Unable to create certificate authority")
     return nil, nil, nil, err
   }
 
-  return &privateKey, certificate, certificateBytes, nil
+  return privateKey, certificate, certificateBytes, nil
 }
 
 func writeCertificate(certificateBytes []byte, path string) error {
@@ -76,7 +77,7 @@ func writeCertificate(certificateBytes []byte, path string) error {
   return nil
 }
 
-func writeKey(privateKey *ed25519.PrivateKey, path string) error {
+func writeKey(privateKey *ecdsa.PrivateKey, path string) error {
   file, err := os.Create(path)
 	if err != nil {
     core.LogError("Unable to create file '%s'", path)
@@ -99,8 +100,8 @@ func writeKey(privateKey *ed25519.PrivateKey, path string) error {
   return nil
 }
 
-func generateKeys() (ed25519.PrivateKey, error) {
-  _, privateKey, err := ed25519.GenerateKey(rand.Reader)
+func generateKeys() (*ecdsa.PrivateKey, error) {
+  privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
   if err != nil {
     core.LogError("Unable to generate keys")
     return nil, err
