@@ -1,1 +1,5 @@
 build
+*.crt
+*.pem
+config.toml
+test-config.toml
