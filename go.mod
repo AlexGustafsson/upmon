@@ -4,7 +4,11 @@ go 1.13
 
 require (
 	github.com/AlexGustafsson/upmon/core v0.0.0
+	github.com/AlexGustafsson/upmon/rpc v0.0.0
 	github.com/BurntSushi/toml v0.3.1
+	github.com/google/uuid v1.1.1
 )
 
 replace github.com/AlexGustafsson/upmon/core => ./core
+
+replace github.com/AlexGustafsson/upmon/rpc => ./rpc

@@ -3,12 +3,20 @@ package main
 import (
 	"fmt"
 	"github.com/AlexGustafsson/upmon/core"
+	"github.com/AlexGustafsson/upmon/rpc"
+	"google.golang.org/grpc/credentials"
+	"github.com/golang/protobuf/ptypes"
+	"context"
+	"google.golang.org/grpc"
+	"github.com/google/uuid"
 	"plugin"
+	"time"
 	"os"
-	"crypto/sha1"
-	"encoding/base64"
 	"crypto/tls"
 	"sync"
+	"net"
+	"crypto/sha1"
+	"encoding/base64"
 )
 
 func main() {
@@ -115,14 +123,73 @@ func start() {
 func connect(tlsConfig tls.Config, hostname string, port int, waitGroup sync.WaitGroup) {
 	defer waitGroup.Done()
 
-	connection, err := tls.Dial("tcp", fmt.Sprintf("%s:%d", hostname, port), &tlsConfig)
+	connection, err := grpc.Dial(fmt.Sprintf("%s:%d", hostname, port), grpc.WithTransportCredentials(credentials.NewTLS(&tlsConfig)))
 	if err != nil {
 		core.LogError("Unable to connect to peer %v:%v, got error: %v", hostname, port, err)
 		return
 	}
 	defer connection.Close()
 
-	state := connection.ConnectionState()
+	client := rpc.NewUpmonClient(connection)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	// Generate UUIDv4
+	serviceID, err := uuid.NewRandom()
+	if err != nil {
+		core.LogError("Unable to generate UUIDv4")
+		return
+	}
+
+	// Format UUIDv4
+	formattedServiceID := serviceID.URN()
+
+	timestamp := ptypes.TimestampNow()
+
+	result, err := client.SendServicePing(ctx, &rpc.ServicePing{
+		ServiceId: formattedServiceID,
+		Status: rpc.ServicePing_UP,
+		Timestamp: timestamp,
+	})
+	if err != nil {
+		core.LogError("Unable to send service ping")
+		return
+	}
+
+	core.LogDebug("Got result from server: %v", result)
+}
+
+func listen(tlsConfig tls.Config, hostname string, port int, waitGroup sync.WaitGroup) {
+	defer waitGroup.Done()
+
+	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", hostname, port))
+	if err != nil {
+		core.LogError("Unable to create listener instance, got error: %v", err)
+		return
+	}
+
+	server := grpc.NewServer(grpc.Creds(credentials.NewTLS(&tlsConfig)))
+
+	// Register services
+	rpc.RegisterUpmonServer(server, &upmonServer{})
+
+	if err = server.Serve(listener); err != nil {
+		core.LogError("Failed to start server instance: %v", err)
+		return
+	}
+/*
+	p, ok := peer.FromContext(ctx)
+	if !ok {
+		return status.Error(codes.Unauthenticated, "no peer found")
+	}
+
+	tlsAuth, ok := p.AuthInfo.(credentials.TLSInfo)
+	if !ok {
+	    return status.Error(codes.Unauthenticated, "unexpected peer transport credentials")
+	}
+
+	state := tlsAuth.State
 	if len(state.PeerCertificates) == 0 {
 		core.LogWarning("Peer from %s sent no certificates, closing connection", connection.RemoteAddr())
 		return
@@ -135,54 +202,8 @@ func connect(tlsConfig tls.Config, hostname string, port int, waitGroup sync.Wai
 
 	shasum := sha1.Sum(certificate.Raw)
 	fingerprint := base64.StdEncoding.EncodeToString(shasum[:])
-	core.LogDebug("Peer has the fingerprint fingerprint: %v", fingerprint)
-}
+	core.LogDebug("Peer has the fingerprint fingerprint: %v", fingerprint)*/
 
-func listen(tlsConfig tls.Config, hostname string, port int, waitGroup sync.WaitGroup) {
-	defer waitGroup.Done()
-
-	listener, err := tls.Listen("tcp", fmt.Sprintf("%s:%d", hostname, port), &tlsConfig)
-	if err != nil {
-		core.LogError("Unable to create TLS server instance, got error: %v", err)
-		return
-	}
-
-	for {
-		connection, err := listener.Accept()
-		if err != nil {
-			core.LogWarning("Unable to accept connection, got error: %v", err)
-		}
-		core.LogDebug("Accepted connection from %s", connection.RemoteAddr())
-
-		tlsConnection, ok := connection.(*tls.Conn)
-		if ok {
-			err := tlsConnection.Handshake()
-			if err != nil {
-				core.LogWarning("Hanshake with peer %v failed", connection.RemoteAddr())
-				continue
-			}
-
-			state := tlsConnection.ConnectionState()
-			if len(state.PeerCertificates) == 0 {
-				core.LogWarning("Peer from %s sent no certificates, closing connection", connection.RemoteAddr())
-				connection.Close()
-				continue
-			} else if len(state.PeerCertificates) != 1 {
-				core.LogWarning("Peer from %s has multiple certificates, closing connection", connection.RemoteAddr())
-				connection.Close()
-				continue
-			}
-
-			certificate := state.PeerCertificates[0]
-
-			shasum := sha1.Sum(certificate.Raw)
-			fingerprint := base64.StdEncoding.EncodeToString(shasum[:])
-			core.LogDebug("Peer has the fingerprint fingerprint: %v", fingerprint)
-		} else {
-			core.LogWarning("Unable to treat connection from peer %v as TLS", connection.RemoteAddr())
-			continue
-		}
-	}
 
 	core.LogNotice("Listening on port %s:%d", hostname, port)
 }
