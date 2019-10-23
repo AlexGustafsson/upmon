@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/AlexGustafsson/upmon/core"
 	"github.com/AlexGustafsson/upmon/rpc"
-	"google.golang.org/grpc/credentials"
+	"github.com/AlexGustafsson/upmon/transport"
 	"github.com/golang/protobuf/ptypes"
 	"context"
 	"google.golang.org/grpc"
@@ -123,7 +123,7 @@ func start() {
 func connect(tlsConfig tls.Config, hostname string, port int, waitGroup sync.WaitGroup) {
 	defer waitGroup.Done()
 
-	connection, err := grpc.Dial(fmt.Sprintf("%s:%d", hostname, port), grpc.WithTransportCredentials(credentials.NewTLS(&tlsConfig)))
+	connection, err := grpc.Dial(fmt.Sprintf("%s:%d", hostname, port), grpc.WithTransportCredentials(transport.WithConfig(&tlsConfig)))
 	if err != nil {
 		core.LogError("Unable to connect to peer %v:%v, got error: %v", hostname, port, err)
 		return
@@ -169,7 +169,7 @@ func listen(tlsConfig tls.Config, hostname string, port int, waitGroup sync.Wait
 		return
 	}
 
-	server := grpc.NewServer(grpc.Creds(credentials.NewTLS(&tlsConfig)))
+	server := grpc.NewServer(grpc.Creds(transport.WithConfig(&tlsConfig)))
 
 	// Register services
 	rpc.RegisterUpmonServer(server, &upmonServer{})

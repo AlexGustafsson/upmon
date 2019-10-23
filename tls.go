@@ -8,14 +8,13 @@ import (
   "crypto/rand"
   "encoding/pem"
   "math/big"
-  "time"
   "net"
+  "time"
   "os"
 	"github.com/AlexGustafsson/upmon/core"
 )
 
 // SEE: https://golang.org/src/crypto/tls/generate_cert.go
-
 func createSelfSignedCertificate(hostnames ...string)  (*ecdsa.PrivateKey, *x509.Certificate, []byte, error) {
   serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
   serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
