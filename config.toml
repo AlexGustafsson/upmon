@@ -1,5 +1,11 @@
 logLevel = "debug"
 
+[services]
+[services.irc]
+  checks = ["irc", "ping"]
+  hostname = "irc.blesstherains.africa"
+  port = 6697
+
 [peers]
 [peers.self]
   hostname = "0.0.0.0"
