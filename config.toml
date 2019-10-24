@@ -1,18 +1,19 @@
 logLevel = "debug"
 
-[services]
-[services.irc]
+[[services]]
+  name = "IRC"
   checks = ["irc", "ping"]
   hostname = "irc.blesstherains.africa"
   port = 6697
 
-[peers]
-[peers.self]
+[[peers]]
+  name = "self"
   hostname = "0.0.0.0"
   port = 3660
   certificate = "./server.crt"
   key = "./server.pem"
-[peers.test]
+[[peers]]
+  name = "test"
   hostname = "localhost"
   port = 3661
   fingerprint = "ekwLd2xUbz5ykTAKT1N1pO8eXR4="

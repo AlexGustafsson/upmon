@@ -94,7 +94,7 @@ func start() {
 	}
 	core.SetLogLevel(config.LogLevel)
 
-	self := config.Peers["self"]
+	self := config.GetPeerByName("self")
 	core.LogDebug("Loading certificate from '%s' and key from '%s'", self.Certificate, self.Key)
 	certificate, err := tls.LoadX509KeyPair(self.Certificate, self.Key)
 	if err != nil {
