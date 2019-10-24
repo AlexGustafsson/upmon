@@ -96,7 +96,7 @@ func start() {
 
 	self := config.GetPeerByName("self")
 	core.LogDebug("Loading certificate from '%s' and key from '%s'", self.Certificate, self.Key)
-	certificate, err := tls.LoadX509KeyPair(self.Certificate, self.Key)
+	/*certificate, err := tls.LoadX509KeyPair(self.Certificate, self.Key)
 	if err != nil {
 		core.LogError("Unable to load TLS certificate and key, got error: %v", err)
 		os.Exit(1)
@@ -107,9 +107,24 @@ func start() {
 		ClientAuth: tls.RequireAnyClientCert,
 		MinVersion: tls.VersionTLS13,
 		InsecureSkipVerify: true,
+	}*/
+
+	ircModule, err := loadModule("./build/modules/irc.so")
+	if err != nil {
+		core.LogError("Unable to load IRC module, got error: %v", err)
+		os.Exit(1)
 	}
 
-  var waitGroup sync.WaitGroup
+	ircService := &config.Services[0]
+	serviceInfo, err := ircModule.CheckService(ircService)
+	if err != nil {
+		core.LogError("Unable to check status of service '%v', got error: %v", ircService.Name, err)
+		os.Exit(1)
+	}
+
+	core.LogDebug("The IRC service had the status %v", serviceInfo.Status)
+
+  /*var waitGroup sync.WaitGroup
 
 	waitGroup.Add(1)
 	go listen(tlsConfig, self.Hostname, self.Port, waitGroup)
@@ -117,7 +132,7 @@ func start() {
 	waitGroup.Add(1)
 	go connect(tlsConfig, self.Hostname, self.Port, waitGroup)
 
-	waitGroup.Wait()
+	waitGroup.Wait()*/
 }
 
 func connect(tlsConfig tls.Config, hostname string, port int, waitGroup sync.WaitGroup) {
