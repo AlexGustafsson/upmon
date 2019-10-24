@@ -15,20 +15,17 @@ const (
 	ModuleVersion1       = iota
 )
 
-// Host describes a network host or an application
-type Host struct {
-	Name        string
-	Description string
-	IP          string
-	Port        int
+// ServiceInfo describes information gathered when checking the status of a service
+type ServiceInfo struct {
+	Status int
 }
 
-type checkStatus func(*Host) (int, error)
+type checkService func(*ServiceConfig) (*ServiceInfo, error)
 
 // Module describes a module used for checking the status of a host
 type Module struct {
 	Name        string
 	Description string
 	Version     int
-	CheckStatus checkStatus
+	CheckService checkService
 }
