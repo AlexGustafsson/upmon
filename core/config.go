@@ -39,3 +39,20 @@ func (config *Config) GetPeerByName(name string) (*PeerConfig) {
 
   return nil
 }
+
+// GetUsedModules return a list of all used modules
+func (config *Config) GetUsedModules() ([]string) {
+  serviceMap := make(map[string]bool)
+  for _, service := range config.Services {
+    for _, module := range service.Checks {
+      serviceMap[module] = true
+    }
+  }
+
+  var services []string
+  for service := range serviceMap {
+    services = append(services, service)
+  }
+
+  return services
+}

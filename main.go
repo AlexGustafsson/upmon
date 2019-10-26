@@ -14,6 +14,7 @@ import (
 	"os"
 	"crypto/tls"
 	"sync"
+	"encoding/json"
 	"net"
 	"crypto/sha1"
 	"encoding/base64"
@@ -30,14 +31,44 @@ func main() {
 
 	if command == "generate-certificate" {
 		generateCertificates()
-	} else if command == "start" {
-		start()
 	} else if command == "help" {
 		printHelp()
 	} else {
-		core.LogError("Unknown command: %v", command)
-		printHelp()
-		os.Exit(1)
+		var config = new(core.Config)
+		var logLevel string
+		var err error = nil
+		for i := 1; i < len(os.Args) && err == nil; i++ {
+			argument := os.Args[i]
+			if argument == "-c" || argument == "--config" {
+				i++
+				path := os.Args[i]
+				config, err = loadConfig(path)
+			} else if argument == "-d" || argument == "--debug" {
+				logLevel = "debug"
+			}
+		}
+
+		if err != nil {
+			core.LogError("Unable to parse arguments, got error %v", err)
+			os.Exit(1)
+		}
+
+		if logLevel != "" {
+			config.LogLevel = logLevel
+		} else if config.LogLevel == "" {
+			config.LogLevel = "error"
+		}
+		core.SetLogLevel(config.LogLevel)
+
+		if command == "start" {
+			start(config)
+		} else if command == "check" {
+			check(config)
+		} else {
+			core.LogError("Unknown command: %v", command)
+			printHelp()
+			os.Exit(1)
+		}
 	}
 }
 
@@ -67,36 +98,10 @@ func generateCertificates() {
 	fmt.Println("Fingerprint is:", fingerprint)
 }
 
-func start() {
-	var config = new(core.Config)
-	var logLevel string
-	var err error = nil
-	for i := 1; i < len(os.Args) && err == nil; i++ {
-		argument := os.Args[i]
-		if argument == "-c" || argument == "--config" {
-			i++
-			path := os.Args[i]
-			config, err = loadConfig(path)
-		} else if argument == "-d" || argument == "--debug" {
-			logLevel = "debug"
-		}
-	}
-
-	if err != nil {
-		core.LogError("Unable to parse arguments, got error %v", err)
-		os.Exit(1)
-	}
-
-	if logLevel != "" {
-		config.LogLevel = logLevel
-	} else if config.LogLevel == "" {
-		config.LogLevel = "error"
-	}
-	core.SetLogLevel(config.LogLevel)
-
+func start(config *core.Config) {
 	self := config.GetPeerByName("self")
 	core.LogDebug("Loading certificate from '%s' and key from '%s'", self.Certificate, self.Key)
-	/*certificate, err := tls.LoadX509KeyPair(self.Certificate, self.Key)
+	certificate, err := tls.LoadX509KeyPair(self.Certificate, self.Key)
 	if err != nil {
 		core.LogError("Unable to load TLS certificate and key, got error: %v", err)
 		os.Exit(1)
@@ -107,24 +112,9 @@ func start() {
 		ClientAuth: tls.RequireAnyClientCert,
 		MinVersion: tls.VersionTLS13,
 		InsecureSkipVerify: true,
-	}*/
-
-	ircModule, err := loadModule("./build/modules/irc.so")
-	if err != nil {
-		core.LogError("Unable to load IRC module, got error: %v", err)
-		os.Exit(1)
 	}
 
-	ircService := &config.Services[0]
-	serviceInfo, err := ircModule.CheckService(ircService)
-	if err != nil {
-		core.LogError("Unable to check status of service '%v', got error: %v", ircService.Name, err)
-		os.Exit(1)
-	}
-
-	core.LogDebug("The IRC service had the status %v", serviceInfo.Status)
-
-  /*var waitGroup sync.WaitGroup
+  var waitGroup sync.WaitGroup
 
 	waitGroup.Add(1)
 	go listen(tlsConfig, self.Hostname, self.Port, waitGroup)
@@ -132,7 +122,64 @@ func start() {
 	waitGroup.Add(1)
 	go connect(tlsConfig, self.Hostname, self.Port, waitGroup)
 
-	waitGroup.Wait()*/
+	waitGroup.Wait()
+}
+
+func check(config *core.Config) {
+	modules := make(map[string]*core.Module)
+	for _, moduleName := range config.GetUsedModules() {
+		module, err := loadModule(fmt.Sprintf("./build/modules/%v.so", moduleName))
+		modules[moduleName] = module
+		if err != nil {
+			core.LogError("Unable to load module '%v', got error: %v", moduleName, err)
+			os.Exit(1)
+		}
+	}
+
+	if len(config.Services) == 0 {
+		core.LogWarning("No services configured, nothing to check")
+		return
+	}
+
+	var result core.Result
+	result.Services = make(map[string]*core.ServiceResult)
+
+	for _, service := range config.Services {
+		core.LogDebug("Checking status for service '%v'", service.Name)
+		serviceResult := core.ServiceResult{
+			Name: service.Name,
+			Status: core.StatusUnknown,
+		}
+		result.Services[service.Name] = &serviceResult
+
+		for _, moduleName := range service.Checks {
+			core.LogDebug("Using module '%v'", moduleName)
+			module := modules[moduleName]
+			serviceResult.Timestamp = time.Now().Unix()
+			serviceInfo, err := module.CheckService(&service)
+			if err != nil {
+				core.LogError("Unable to check status of service '%v' using module '%v', got error: %v", service.Name, moduleName, err)
+				os.Exit(1)
+			}
+
+			core.LogDebug("The IRC service had the status %v", serviceInfo.Status)
+
+			if serviceInfo.Status != core.StatusUnknown {
+				core.LogDebug("Got a result from module '%v', assuming accurate", moduleName)
+				serviceResult.Status = serviceInfo.Status
+				break
+			}
+		}
+	}
+
+	jsonBytes, err := json.MarshalIndent(result, "", "  ")
+	if err != nil {
+		core.LogError("Unable to marshal result to JSON, got error: %v", err)
+		os.Exit(1)
+	}
+
+	os.Stdout.Write(jsonBytes)
+	fmt.Println()
 }
 
 func connect(tlsConfig tls.Config, hostname string, port int, waitGroup sync.WaitGroup) {
@@ -193,32 +240,6 @@ func listen(tlsConfig tls.Config, hostname string, port int, waitGroup sync.Wait
 		core.LogError("Failed to start server instance: %v", err)
 		return
 	}
-/*
-	p, ok := peer.FromContext(ctx)
-	if !ok {
-		return status.Error(codes.Unauthenticated, "no peer found")
-	}
-
-	tlsAuth, ok := p.AuthInfo.(credentials.TLSInfo)
-	if !ok {
-	    return status.Error(codes.Unauthenticated, "unexpected peer transport credentials")
-	}
-
-	state := tlsAuth.State
-	if len(state.PeerCertificates) == 0 {
-		core.LogWarning("Peer from %s sent no certificates, closing connection", connection.RemoteAddr())
-		return
-	} else if len(state.PeerCertificates) != 1 {
-		core.LogWarning("Peer from %s has multiple certificates, closing connection", connection.RemoteAddr())
-		return
-	}
-
-	certificate := state.PeerCertificates[0]
-
-	shasum := sha1.Sum(certificate.Raw)
-	fingerprint := base64.StdEncoding.EncodeToString(shasum[:])
-	core.LogDebug("Peer has the fingerprint fingerprint: %v", fingerprint)*/
-
 
 	core.LogNotice("Listening on port %s:%d", hostname, port)
 }
