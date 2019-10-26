@@ -6,6 +6,7 @@ import (
   "time"
   "runtime"
   "regexp"
+  "os"
 )
 
 var mutex sync.Mutex
@@ -38,10 +39,10 @@ func log(level string, format string, values ...interface{}) {
   callerFile = projectRegex.FindStringSubmatch(callerFile)[1]
 
   mutex.Lock()
-  fmt.Printf("[\x1b[%dm%s\x1b[0m]\x1b[90m[%s]\x1b[90m[%d@%s][%s]\n", color, level, formattedTime, callerLine, callerFile, callerName)
-  fmt.Printf("    └──\x1b[0m")
-  fmt.Printf(format, values...)
-  fmt.Println()
+  fmt.Fprintf(os.Stderr, "[\x1b[%dm%s\x1b[0m]\x1b[90m[%s]\x1b[90m[%d@%s][%s]\n", color, level, formattedTime, callerLine, callerFile, callerName)
+  fmt.Fprintf(os.Stderr, "    └──\x1b[0m")
+  fmt.Fprintf(os.Stderr, format, values...)
+  fmt.Fprintf(os.Stderr, "\n")
   mutex.Unlock()
 }
 
