@@ -255,6 +255,7 @@ func printHelp() {
 	fmt.Println("");
 	fmt.Println("\x1b[1mCOMMANDS\x1b[0m");
 	fmt.Println("start                   Start Upmon");
+	fmt.Println("check                   Run checks");
 	fmt.Println("help                    Show this help text");
 	fmt.Println("version                 Show current version");
 	fmt.Println("generate-certificate    Generate a strong certificate and private key for TLS 1.3");
