@@ -33,6 +33,8 @@ func main() {
 		generateCertificates()
 	} else if command == "help" {
 		printHelp()
+	} else if command == "version" {
+		printVersion()
 	} else {
 		var config = new(core.Config)
 		var logLevel string
@@ -236,7 +238,8 @@ func listen(tlsConfig tls.Config, hostname string, port int, waitGroup sync.Wait
 	// Register services
 	rpc.RegisterUpmonServer(server, &upmonServer{})
 
-	if err = server.Serve(listener); err != nil {
+	err = server.Serve(listener)
+	if err != nil {
 		core.LogError("Failed to start server instance: %v", err)
 		return
 	}
@@ -244,25 +247,36 @@ func listen(tlsConfig tls.Config, hostname string, port int, waitGroup sync.Wait
 	core.LogNotice("Listening on port %s:%d", hostname, port)
 }
 
+func printVersion() {
+	fmt.Println("Upmon ( \xF0\x9D\x9C\xB6 ) - A cloud-native, distributed uptime monitor written in Go")
+	fmt.Println("");
+  fmt.Println("\x1b[1mVERSION\x1b[0m");
+  fmt.Println(fmt.Sprintf("Upmon v%v", upmonVersion))
+  fmt.Println(fmt.Sprintf("Compiled %v with %v", compileTime, goVersion));
+  fmt.Println("");
+  fmt.Println("\x1b[1mOPEN SOURCE\x1b[0m");
+  fmt.Println("The source code is hosted on https://github.com/AlexGustafsson/upmon");
+}
+
 func printHelp() {
-	fmt.Println("Upmon ( \xF0\x9D\x9C\xB6 ) - A cloud-native, distributed uptime monitor written in Go");
-	fmt.Println("");
-	fmt.Println("\x1b[1mVERSION\x1b[0m");
-	fmt.Println("Upmon v0.1.0");
-	fmt.Println("");
-	fmt.Println("\x1b[1mUSAGE\x1b[0m");
-	fmt.Println("$ upmon <command> [arguments]");
-	fmt.Println("");
-	fmt.Println("\x1b[1mCOMMANDS\x1b[0m");
-	fmt.Println("start                   Start Upmon");
-	fmt.Println("check                   Run checks");
-	fmt.Println("help                    Show this help text");
-	fmt.Println("version                 Show current version");
-	fmt.Println("generate-certificate    Generate a strong certificate and private key for TLS 1.3");
-	fmt.Println("");
-	fmt.Println("\x1b[1mARGUMENTS\x1b[0m");
-	fmt.Println("-c    --config          Specify the config file");
-	fmt.Println("-d    --debug           Run Upmon with debug logging enabled");
+	fmt.Println("Upmon ( \xF0\x9D\x9C\xB6 ) - A cloud-native, distributed uptime monitor written in Go")
+	fmt.Println("")
+	fmt.Println("\x1b[1mVERSION\x1b[0m")
+	fmt.Println(fmt.Sprintf("Upmon v%v", upmonVersion))
+	fmt.Println("")
+	fmt.Println("\x1b[1mUSAGE\x1b[0m")
+	fmt.Println("$ upmon <command> [arguments]")
+	fmt.Println("")
+	fmt.Println("\x1b[1mCOMMANDS\x1b[0m")
+	fmt.Println("start                   Start Upmon")
+	fmt.Println("check                   Run checks")
+	fmt.Println("help                    Show this help text")
+	fmt.Println("version                 Show current version")
+	fmt.Println("generate-certificate    Generate a strong certificate and private key for TLS 1.3")
+	fmt.Println("")
+	fmt.Println("\x1b[1mARGUMENTS\x1b[0m")
+	fmt.Println("-c    --config          Specify the config file")
+	fmt.Println("-d    --debug           Run Upmon with debug logging enabled")
 }
 
 func loadModule(path string) (*core.Module, error) {
