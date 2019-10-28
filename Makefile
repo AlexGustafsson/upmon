@@ -12,6 +12,7 @@ BUILD_FLAGS :=-ldflags '$(BUILD_VARIABLES)'
 modules := $(wildcard modules/*)
 source := $(shell find ./ -type f -name '*.go')
 coreSource := $(shell find core -type f -name '*.go')
+cliSource := $(shell find cli -type f -name '*.go')
 rpcSource := $(shell find rpc -type f -name '*.go')
 rpcDefinitions := $(shell find rpc -type f -name '*.proto')
 rpcGenerated :=$(rpcDefinitions:.proto=.pb.go)
@@ -21,7 +22,7 @@ mainSource := $(shell find ./ -depth 1 -type f -name '*.go')
 
 build: build/upmon $(modules)
 
-build/upmon: $(rpcGenerated) $(mainSource) $(coreSource) $(rpcSource)
+build/upmon: $(rpcGenerated) $(mainSource) $(coreSource) $(rpcSource) $(cliSource)
 	go build $(BUILD_FLAGS) -o $@ $(mainSource)
 
 $(rpcGenerated): rpc/%.pb.go: rpc/%.proto

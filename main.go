@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/AlexGustafsson/upmon/core"
+	"github.com/AlexGustafsson/upmon/cli"
 	"github.com/AlexGustafsson/upmon/rpc"
 	"github.com/AlexGustafsson/upmon/transport"
 	"github.com/golang/protobuf/ptypes"
@@ -21,57 +22,29 @@ import (
 )
 
 func main() {
-	if len(os.Args) <= 1 {
-		core.LogError("Expected a command to be given")
-		printHelp()
-		os.Exit(1)
-	}
+	cli.SetVersion(upmonVersion)
+	cli.SetGoVersion(goVersion)
+	cli.SetCompileTime(compileTime)
 
-	command := os.Args[1]
+	cli.RegisterStandaloneCommand(
+		"generate-certificate",
+		generateCertificates,
+		"Generate a strong certificate and private key for TLS 1.3",
+	)
 
-	if command == "generate-certificate" {
-		generateCertificates()
-	} else if command == "help" {
-		printHelp()
-	} else if command == "version" {
-		printVersion()
-	} else {
-		var config = new(core.Config)
-		var logLevel string
-		var err error = nil
-		for i := 1; i < len(os.Args) && err == nil; i++ {
-			argument := os.Args[i]
-			if argument == "-c" || argument == "--config" {
-				i++
-				path := os.Args[i]
-				config, err = loadConfig(path)
-			} else if argument == "-d" || argument == "--debug" {
-				logLevel = "debug"
-			}
-		}
+	cli.RegisterCommand(
+		"start",
+		start,
+		"Start Upmon",
+	)
 
-		if err != nil {
-			core.LogError("Unable to parse arguments, got error %v", err)
-			os.Exit(1)
-		}
+	cli.RegisterCommand(
+		"check",
+		check,
+		"Run checks",
+	)
 
-		if logLevel != "" {
-			config.LogLevel = logLevel
-		} else if config.LogLevel == "" {
-			config.LogLevel = "error"
-		}
-		core.SetLogLevel(config.LogLevel)
-
-		if command == "start" {
-			start(config)
-		} else if command == "check" {
-			check(config)
-		} else {
-			core.LogError("Unknown command: %v", command)
-			printHelp()
-			os.Exit(1)
-		}
-	}
+	cli.Run()
 }
 
 func generateCertificates() {
@@ -245,38 +218,6 @@ func listen(tlsConfig tls.Config, hostname string, port int, waitGroup sync.Wait
 	}
 
 	core.LogNotice("Listening on port %s:%d", hostname, port)
-}
-
-func printVersion() {
-	fmt.Println("Upmon ( \xF0\x9D\x9C\xB6 ) - A cloud-native, distributed uptime monitor written in Go")
-	fmt.Println("");
-  fmt.Println("\x1b[1mVERSION\x1b[0m");
-  fmt.Println(fmt.Sprintf("Upmon v%v", upmonVersion))
-  fmt.Println(fmt.Sprintf("Compiled %v with %v", compileTime, goVersion));
-  fmt.Println("");
-  fmt.Println("\x1b[1mOPEN SOURCE\x1b[0m");
-  fmt.Println("The source code is hosted on https://github.com/AlexGustafsson/upmon");
-}
-
-func printHelp() {
-	fmt.Println("Upmon ( \xF0\x9D\x9C\xB6 ) - A cloud-native, distributed uptime monitor written in Go")
-	fmt.Println("")
-	fmt.Println("\x1b[1mVERSION\x1b[0m")
-	fmt.Println(fmt.Sprintf("Upmon v%v", upmonVersion))
-	fmt.Println("")
-	fmt.Println("\x1b[1mUSAGE\x1b[0m")
-	fmt.Println("$ upmon <command> [arguments]")
-	fmt.Println("")
-	fmt.Println("\x1b[1mCOMMANDS\x1b[0m")
-	fmt.Println("start                   Start Upmon")
-	fmt.Println("check                   Run checks")
-	fmt.Println("help                    Show this help text")
-	fmt.Println("version                 Show current version")
-	fmt.Println("generate-certificate    Generate a strong certificate and private key for TLS 1.3")
-	fmt.Println("")
-	fmt.Println("\x1b[1mARGUMENTS\x1b[0m")
-	fmt.Println("-c    --config          Specify the config file")
-	fmt.Println("-d    --debug           Run Upmon with debug logging enabled")
 }
 
 func loadModule(path string) (*core.Module, error) {

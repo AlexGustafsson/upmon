@@ -1,5 +1,10 @@
 package core
 
+import (
+  "io/ioutil"
+  "github.com/BurntSushi/toml"
+)
+
 // PeerConfig describes the configuration for a peer in the network
 type PeerConfig struct {
   Name string
@@ -55,4 +60,23 @@ func (config *Config) GetUsedModules() ([]string) {
   }
 
   return services
+}
+
+// LoadConfig reads and parses a given TOML configuration file
+func LoadConfig(path string) (*Config, error) {
+  LogDebug("Loading config from '%s'", path)
+  dataBuffer, err := ioutil.ReadFile(path)
+  if err != nil {
+    return nil, err
+  }
+
+  data := string(dataBuffer)
+
+  var config = new(Config)
+  _, err = toml.Decode(data, config);
+  if err != nil {
+    return nil, err
+  }
+
+  return config, nil
 }
