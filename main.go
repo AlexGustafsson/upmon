@@ -22,6 +22,11 @@ import (
 )
 
 func main() {
+	config, err := cli.ParseArguments()
+	if err != nil {
+		os.Exit(1)
+	}
+
 	cli.SetVersion(upmonVersion)
 	cli.SetGoVersion(goVersion)
 	cli.SetCompileTime(compileTime)
@@ -44,7 +49,15 @@ func main() {
 		"Run checks",
 	)
 
-	cli.Run()
+	var allowedFingerprints []string
+	for _, peer := range config.Peers {
+		core.LogDebug(peer.Fingerprint)
+		allowedFingerprints = append(allowedFingerprints, peer.Fingerprint)
+	}
+
+	transport.SetAllowedFingerprints(allowedFingerprints)
+
+	cli.Run(config)
 }
 
 func generateCertificates() {

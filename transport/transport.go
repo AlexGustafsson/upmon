@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"google.golang.org/grpc/credentials"
+	"github.com/AlexGustafsson/upmon/core"
 	"net"
 )
 
@@ -21,6 +22,8 @@ type tlsTransportError struct {
 	text string
 }
 
+var allowedFingerprints []string
+
 func (transportError *tlsTransportError) Error() string {
 	return transportError.text
 }
@@ -34,6 +37,11 @@ func (transportError *tlsTransportError) Temporary() bool {
 
 func newTransportError(text string) error {
 	return &tlsTransportError{text}
+}
+
+// SetAllowedFingerprints sets the allowed fingerprints
+func SetAllowedFingerprints(fingerprints []string) {
+	allowedFingerprints = fingerprints
 }
 
 // ClientHandshake does the authentication handshake specified by the corresponding
@@ -68,9 +76,15 @@ func (transport *tlsTransport) ClientHandshake(ctx context.Context, authority st
 		return nil, nil, err
 	}
 
-	fmt.Println("Peer has the fingerprint fingerprint: %v", fingerprint)
+	for _, allowedFingerprint := range allowedFingerprints {
+		if fingerprint == allowedFingerprint {
+			core.LogDebug("Handshake succeeded with peer with fingerprint '%v'", fingerprint)
+			return connection, credentials.TLSInfo{connection.ConnectionState()}, nil
+		}
+	}
 
-	return connection, credentials.TLSInfo{connection.ConnectionState()}, nil
+	core.LogWarning("Handshake with peer was unsucessful - fingeprint '%v' is not allowed", fingerprint)
+	return nil, nil, newTransportError(fmt.Sprintf("Handshake with peer '%v' failed, fingeprint '%v' is not allowed", connection.RemoteAddr(), fingerprint))
 }
 
 // ServerHandshake does the authentication handshake for servers. It returns
@@ -83,7 +97,7 @@ func (transport *tlsTransport) ServerHandshake(rawConnection net.Conn) (net.Conn
 
 	err := connection.Handshake()
 	if err != nil {
-		return nil, nil, newTransportError(fmt.Sprintf("Hanshake with peer %v failed", connection.RemoteAddr()))
+		return nil, nil, newTransportError(fmt.Sprintf("Hanshake with peer '%v' failed", connection.RemoteAddr()))
 	}
 
 	fingerprint, err := getFingerprint(connection)
@@ -91,9 +105,15 @@ func (transport *tlsTransport) ServerHandshake(rawConnection net.Conn) (net.Conn
 		return nil, nil, err
 	}
 
-	fmt.Println("Peer has the fingerprint fingerprint: %v", fingerprint)
+	for _, allowedFingerprint := range allowedFingerprints {
+		if fingerprint == allowedFingerprint {
+			core.LogDebug("Handshake succeeded with peer with fingerprint '%v'", fingerprint)
+			return connection, credentials.TLSInfo{connection.ConnectionState()}, nil
+		}
+	}
 
-	return connection, credentials.TLSInfo{connection.ConnectionState()}, nil
+	core.LogWarning("Handshake with peer was unsucessful - fingeprint '%v' is not allowed", fingerprint)
+	return nil, nil, newTransportError(fmt.Sprintf("Handshake with peer '%v' failed, fingeprint '%v' is not allowed", connection.RemoteAddr(), fingerprint))
 }
 
 func getFingerprint(connection *tls.Conn) (string, error) {

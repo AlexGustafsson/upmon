@@ -35,8 +35,40 @@ var appVersion string
 var goVersion string
 var compileTime string
 
+// ParseArguments parses CLI arguments
+func ParseArguments() (*core.Config, error) {
+	// Parse config and arguments
+	config := new(core.Config)
+	var logLevel string
+	var err error = nil
+	for i := 1; i < len(os.Args) && err == nil; i++ {
+		argument := os.Args[i]
+		if argument == "-c" || argument == "--config" {
+			i++
+			path := os.Args[i]
+			config, err = core.LoadConfig(path)
+		} else if argument == "-d" || argument == "--debug" {
+			logLevel = "debug"
+		}
+	}
+
+	if err != nil {
+		core.LogError("Unable to parse arguments, got error %v", err)
+		return nil, err
+	}
+
+	if logLevel != "" {
+		config.LogLevel = logLevel
+	} else if config.LogLevel == "" {
+		config.LogLevel = "error"
+	}
+	core.SetLogLevel(config.LogLevel)
+
+	return config, nil
+}
+
 // Run parses arguments and runs the specified command
-func Run() {
+func Run(config *core.Config) {
 	RegisterStandaloneCommand(
 		"help",
 		printHelp,
@@ -77,34 +109,7 @@ func Run() {
 		}
 	}
 
-	// Parse config and arguments
-	var config = new(core.Config)
-	var logLevel string
-	var err error = nil
-	for i := 1; i < len(os.Args) && err == nil; i++ {
-		argument := os.Args[i]
-		if argument == "-c" || argument == "--config" {
-			i++
-			path := os.Args[i]
-			config, err = core.LoadConfig(path)
-		} else if argument == "-d" || argument == "--debug" {
-			logLevel = "debug"
-		}
-	}
-
-	if err != nil {
-		core.LogError("Unable to parse arguments, got error %v", err)
-		os.Exit(1)
-	}
-
-	if logLevel != "" {
-		config.LogLevel = logLevel
-	} else if config.LogLevel == "" {
-		config.LogLevel = "error"
-	}
-	core.SetLogLevel(config.LogLevel)
-
-	// Run commands after config has been parsed
+	// Try regular commands
 	for _, command := range commands {
 		if commandName == command.Name {
 			command.Handler(config)
