@@ -1,39 +1,39 @@
 package transport
 
 import (
-  "google.golang.org/grpc/credentials"
-  "context"
-  "net"
-  "crypto/tls"
-  "crypto/sha1"
-  "encoding/base64"
-  "fmt"
+	"context"
+	"crypto/sha1"
+	"crypto/tls"
+	"encoding/base64"
+	"fmt"
+	"google.golang.org/grpc/credentials"
+	"net"
 )
 
 // SEE: https://github.com/grpc/grpc-go/blob/027cd627f8565bf731a6e1bdf54ce79ba09bda5c/credentials/credentials.go
 
 type tlsTransport struct {
-    credentials.TransportCredentials
-    config *tls.Config
+	credentials.TransportCredentials
+	config *tls.Config
 }
 
 type tlsTransportError struct {
-  text string
+	text string
 }
 
 func (transportError *tlsTransportError) Error() string {
-  return transportError.text
+	return transportError.text
 }
 
 // See below:
 // If the returned error is a wrapper error, implementations should make sure that
 // the error implements Temporary() to have the correct retry behaviors.
 func (transportError *tlsTransportError) Temporary() bool {
-  return true
+	return true
 }
 
 func newTransportError(text string) error {
-  return &tlsTransportError{text}
+	return &tlsTransportError{text}
 }
 
 // ClientHandshake does the authentication handshake specified by the corresponding
@@ -47,30 +47,30 @@ func newTransportError(text string) error {
 //
 // If the returned net.Conn is closed, it MUST close the net.Conn provided.
 func (transport *tlsTransport) ClientHandshake(ctx context.Context, authority string, rawConnection net.Conn) (_ net.Conn, _ credentials.AuthInfo, err error) {
-  config := cloneTLSConfig(transport.config)
+	config := cloneTLSConfig(transport.config)
 
-  connection := tls.Client(rawConnection, config)
-  errChannel := make(chan error, 1)
-  go func() {
-    errChannel <- connection.Handshake()
-  }()
-  select {
-  case err := <-errChannel:
-    if err != nil {
-      return nil, nil, err
-    }
-  case <-ctx.Done():
-    return nil, nil, ctx.Err()
-  }
+	connection := tls.Client(rawConnection, config)
+	errChannel := make(chan error, 1)
+	go func() {
+		errChannel <- connection.Handshake()
+	}()
+	select {
+	case err := <-errChannel:
+		if err != nil {
+			return nil, nil, err
+		}
+	case <-ctx.Done():
+		return nil, nil, ctx.Err()
+	}
 
-  fingerprint, err := getFingerprint(connection)
-  if err != nil {
-    return nil, nil, err
-  }
+	fingerprint, err := getFingerprint(connection)
+	if err != nil {
+		return nil, nil, err
+	}
 
-  fmt.Println("Peer has the fingerprint fingerprint: %v", fingerprint)
+	fmt.Println("Peer has the fingerprint fingerprint: %v", fingerprint)
 
-  return connection, credentials.TLSInfo{connection.ConnectionState()}, nil
+	return connection, credentials.TLSInfo{connection.ConnectionState()}, nil
 }
 
 // ServerHandshake does the authentication handshake for servers. It returns
@@ -79,63 +79,63 @@ func (transport *tlsTransport) ClientHandshake(ctx context.Context, authority st
 //
 // If the returned net.Conn is closed, it MUST close the net.Conn provided.
 func (transport *tlsTransport) ServerHandshake(rawConnection net.Conn) (net.Conn, credentials.AuthInfo, error) {
-  connection := tls.Server(rawConnection, transport.config)
+	connection := tls.Server(rawConnection, transport.config)
 
-  err := connection.Handshake()
+	err := connection.Handshake()
 	if err != nil {
 		return nil, nil, newTransportError(fmt.Sprintf("Hanshake with peer %v failed", connection.RemoteAddr()))
 	}
 
-  fingerprint, err := getFingerprint(connection)
-  if err != nil {
-    return nil, nil, err
-  }
+	fingerprint, err := getFingerprint(connection)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	fmt.Println("Peer has the fingerprint fingerprint: %v", fingerprint)
 
-  return connection, credentials.TLSInfo{connection.ConnectionState()}, nil
+	return connection, credentials.TLSInfo{connection.ConnectionState()}, nil
 }
 
 func getFingerprint(connection *tls.Conn) (string, error) {
 	state := connection.ConnectionState()
-  if len(state.PeerCertificates) == 0 {
-    connection.Close()
-    return "", newTransportError(fmt.Sprintf("Peer from %s sent no certificates, closing connection", connection.RemoteAddr()))
-  } else if len(state.PeerCertificates) != 1 {
-    connection.Close()
-    return "", newTransportError(fmt.Sprintf("Peer from %s has multiple certificates, closing connection", connection.RemoteAddr()))
-  }
+	if len(state.PeerCertificates) == 0 {
+		connection.Close()
+		return "", newTransportError(fmt.Sprintf("Peer from %s sent no certificates, closing connection", connection.RemoteAddr()))
+	} else if len(state.PeerCertificates) != 1 {
+		connection.Close()
+		return "", newTransportError(fmt.Sprintf("Peer from %s has multiple certificates, closing connection", connection.RemoteAddr()))
+	}
 
-  certificate := state.PeerCertificates[0]
+	certificate := state.PeerCertificates[0]
 
-  shasum := sha1.Sum(certificate.Raw)
-  fingerprint := base64.StdEncoding.EncodeToString(shasum[:])
+	shasum := sha1.Sum(certificate.Raw)
+	fingerprint := base64.StdEncoding.EncodeToString(shasum[:])
 
-  return fingerprint, nil
+	return fingerprint, nil
 }
 
 // Info provides the ProtocolInfo of this TransportCredentials.
 func (transport *tlsTransport) Info() credentials.ProtocolInfo {
-  return credentials.ProtocolInfo{
-    SecurityProtocol: "tls",
-    SecurityVersion: "1.3",
-    ServerName: transport.config.ServerName,
-  }
+	return credentials.ProtocolInfo{
+		SecurityProtocol: "tls",
+		SecurityVersion:  "1.3",
+		ServerName:       transport.config.ServerName,
+	}
 }
 
 // Clone makes a copy of this TransportCredentials.
 func (transport *tlsTransport) Clone() credentials.TransportCredentials {
-  return WithConfig(transport.config)
+	return WithConfig(transport.config)
 }
 
 func cloneTLSConfig(config *tls.Config) *tls.Config {
-  return config.Clone()
+	return config.Clone()
 }
 
 // WithConfig creates a Transport with a given TLS config
 func WithConfig(config *tls.Config) credentials.TransportCredentials {
-  transportCredentials := &tlsTransport{
-    config: cloneTLSConfig(config),
-  }
-  return transportCredentials
+	transportCredentials := &tlsTransport{
+		config: cloneTLSConfig(config),
+	}
+	return transportCredentials
 }

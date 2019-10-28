@@ -1,24 +1,24 @@
 package main
 
 import (
+	"context"
+	"crypto/sha1"
+	"crypto/tls"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
-	"github.com/AlexGustafsson/upmon/core"
 	"github.com/AlexGustafsson/upmon/cli"
+	"github.com/AlexGustafsson/upmon/core"
 	"github.com/AlexGustafsson/upmon/rpc"
 	"github.com/AlexGustafsson/upmon/transport"
 	"github.com/golang/protobuf/ptypes"
-	"context"
-	"google.golang.org/grpc"
 	"github.com/google/uuid"
-	"plugin"
-	"time"
-	"os"
-	"crypto/tls"
-	"sync"
-	"encoding/json"
+	"google.golang.org/grpc"
 	"net"
-	"crypto/sha1"
-	"encoding/base64"
+	"os"
+	"plugin"
+	"sync"
+	"time"
 )
 
 func main() {
@@ -83,13 +83,13 @@ func start(config *core.Config) {
 	}
 
 	tlsConfig := tls.Config{
-		Certificates: []tls.Certificate{certificate},
-		ClientAuth: tls.RequireAnyClientCert,
-		MinVersion: tls.VersionTLS13,
+		Certificates:       []tls.Certificate{certificate},
+		ClientAuth:         tls.RequireAnyClientCert,
+		MinVersion:         tls.VersionTLS13,
 		InsecureSkipVerify: true,
 	}
 
-  var waitGroup sync.WaitGroup
+	var waitGroup sync.WaitGroup
 
 	waitGroup.Add(1)
 	go listen(tlsConfig, self.Hostname, self.Port, waitGroup)
@@ -122,7 +122,7 @@ func check(config *core.Config) {
 	for _, service := range config.Services {
 		core.LogDebug("Checking status for service '%v'", service.Name)
 		serviceResult := core.ServiceResult{
-			Name: service.Name,
+			Name:   service.Name,
 			Status: core.StatusUnknown,
 		}
 		result.Services[service.Name] = &serviceResult
@@ -186,7 +186,7 @@ func connect(tlsConfig tls.Config, hostname string, port int, waitGroup sync.Wai
 
 	result, err := client.SendServicePing(ctx, &rpc.ServicePing{
 		ServiceId: formattedServiceID,
-		Status: rpc.ServicePing_UP,
+		Status:    rpc.ServicePing_UP,
 		Timestamp: timestamp,
 	})
 	if err != nil {

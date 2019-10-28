@@ -1,30 +1,30 @@
 package cli
 
 import (
-	"github.com/AlexGustafsson/upmon/core"
-  "os"
 	"fmt"
+	"github.com/AlexGustafsson/upmon/core"
+	"os"
 )
 
 type standaloneCommandHandler func()
 type commandHandler func(*core.Config)
 
 type argument struct {
-  Short string
-  Long string
-  Description string
+	Short       string
+	Long        string
+	Description string
 }
 
 type standaloneCommand struct {
-  Name string
-  Description string
-  Handler standaloneCommandHandler
+	Name        string
+	Description string
+	Handler     standaloneCommandHandler
 }
 
 type command struct {
-  Name string
-  Description string
-  Handler commandHandler
+	Name        string
+	Description string
+	Handler     commandHandler
 }
 
 var standaloneCommands []standaloneCommand
@@ -61,7 +61,7 @@ func Run() {
 		"Run Upmon with debug logging enabled",
 	)
 
-  if len(os.Args) <= 1 {
+	if len(os.Args) <= 1 {
 		core.LogError("Expected a command to be given")
 		printHelp()
 		os.Exit(1)
@@ -119,35 +119,35 @@ func Run() {
 
 // RegisterStandaloneCommand registers a command without any surrounding context
 func RegisterStandaloneCommand(name string, handler standaloneCommandHandler, description string) {
-  command := standaloneCommand{
-    Name: name,
-    Description: description,
-    Handler: handler,
-  }
+	command := standaloneCommand{
+		Name:        name,
+		Description: description,
+		Handler:     handler,
+	}
 
-  standaloneCommands = append(standaloneCommands, command)
+	standaloneCommands = append(standaloneCommands, command)
 }
 
 // RegisterCommand registers a command which needs surrounding context
 func RegisterCommand(name string, handler commandHandler, description string) {
-  command := command{
-    Name: name,
-    Description: description,
-    Handler: handler,
-  }
+	command := command{
+		Name:        name,
+		Description: description,
+		Handler:     handler,
+	}
 
-  commands = append(commands, command)
+	commands = append(commands, command)
 }
 
 // RegisterArgument registers an argument
 func RegisterArgument(short string, long string, description string) {
-  argument := argument{
-    Short: short,
-    Long: long,
-    Description: description,
-  }
+	argument := argument{
+		Short:       short,
+		Long:        long,
+		Description: description,
+	}
 
-  arguments = append(arguments, argument)
+	arguments = append(arguments, argument)
 }
 
 // SetVersion sets the version of the application
@@ -167,13 +167,13 @@ func SetCompileTime(time string) {
 
 func printVersion() {
 	fmt.Println("Upmon ( \xF0\x9D\x9C\xB6 ) - A cloud-native, distributed uptime monitor written in Go")
-	fmt.Println("");
-  fmt.Println("\x1b[1mVERSION\x1b[0m");
-  fmt.Println(fmt.Sprintf("Upmon v%v", appVersion))
-  fmt.Println(fmt.Sprintf("Compiled %v with %v", compileTime, goVersion));
-  fmt.Println("");
-  fmt.Println("\x1b[1mOPEN SOURCE\x1b[0m");
-  fmt.Println("The source code is hosted on https://github.com/AlexGustafsson/upmon");
+	fmt.Println("")
+	fmt.Println("\x1b[1mVERSION\x1b[0m")
+	fmt.Println(fmt.Sprintf("Upmon v%v", appVersion))
+	fmt.Println(fmt.Sprintf("Compiled %v with %v", compileTime, goVersion))
+	fmt.Println("")
+	fmt.Println("\x1b[1mOPEN SOURCE\x1b[0m")
+	fmt.Println("The source code is hosted on https://github.com/AlexGustafsson/upmon")
 }
 
 func printHelp() {
@@ -187,36 +187,36 @@ func printHelp() {
 	fmt.Println("")
 	fmt.Println("\x1b[1mCOMMANDS\x1b[0m")
 
-  padLength := getLongestCommandLength()
+	padLength := getLongestCommandLength()
 
-  for _, command := range commands {
-    fmt.Printf("%-*v    %v\n", padLength, command.Name, command.Description)
-  }
-  for _, command := range standaloneCommands {
-    fmt.Printf("%-*v    %v\n", padLength, command.Name, command.Description)
-  }
+	for _, command := range commands {
+		fmt.Printf("%-*v    %v\n", padLength, command.Name, command.Description)
+	}
+	for _, command := range standaloneCommands {
+		fmt.Printf("%-*v    %v\n", padLength, command.Name, command.Description)
+	}
 
-  fmt.Println("")
+	fmt.Println("")
 	fmt.Println("\x1b[1mARGUMENTS\x1b[0m")
 
-  for _, argument := range arguments {
-    fmt.Printf("%-*v    %v\n", padLength, fmt.Sprintf("-%v    --%v", argument.Short, argument.Long), argument.Description)
-  }
+	for _, argument := range arguments {
+		fmt.Printf("%-*v    %v\n", padLength, fmt.Sprintf("-%v    --%v", argument.Short, argument.Long), argument.Description)
+	}
 }
 
 func getLongestCommandLength() int {
-  length := 0
-  for _, command := range commands {
-    if len(command.Name) > length {
-      length = len(command.Name)
-    }
-  }
+	length := 0
+	for _, command := range commands {
+		if len(command.Name) > length {
+			length = len(command.Name)
+		}
+	}
 
-  for _, command := range standaloneCommands {
-    if len(command.Name) > length {
-      length = len(command.Name)
-    }
-  }
+	for _, command := range standaloneCommands {
+		if len(command.Name) > length {
+			length = len(command.Name)
+		}
+	}
 
 	return length
 }

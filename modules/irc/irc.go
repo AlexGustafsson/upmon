@@ -1,13 +1,13 @@
 package main
 
 import (
+	"bufio"
+	"crypto/tls"
+	"fmt"
 	"github.com/AlexGustafsson/upmon/core"
 	"net"
-	"crypto/tls"
 	"strings"
-	"fmt"
 	"time"
-	"bufio"
 )
 
 // Module is the exported ping module
@@ -36,9 +36,9 @@ func checkService(service *core.ServiceConfig) (*core.ServiceInfo, error) {
 	defer connection.Close()
 
 	tlsConfig := tls.Config{
- 		InsecureSkipVerify: true,
-		ServerName: service.Hostname,
- 	}
+		InsecureSkipVerify: true,
+		ServerName:         service.Hostname,
+	}
 
 	core.LogDebug("Connected to IRC server, trying to upgrade to TLS")
 	tlsConnection := tls.Client(connection, &tlsConfig)
@@ -60,11 +60,10 @@ func checkService(service *core.ServiceConfig) (*core.ServiceInfo, error) {
 	core.LogDebug("Successfully sent PING to service")
 
 	err = connection.SetReadDeadline(time.Now().Add(2 * time.Second))
-  if err != nil {
+	if err != nil {
 		core.LogError("Unable to set deadline for connection, got error: %v", err)
 		return serviceInfo, err
-  }
-
+	}
 
 	reader := bufio.NewReader(connection)
 	scanner := bufio.NewScanner(reader)

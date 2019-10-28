@@ -24,8 +24,8 @@ type checkService func(*ServiceConfig) (*ServiceInfo, error)
 
 // Module describes a module used for checking the status of a host
 type Module struct {
-	Name        string
-	Description string
-	Version     int
+	Name         string
+	Description  string
+	Version      int
 	CheckService checkService
 }

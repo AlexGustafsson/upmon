@@ -1,17 +1,17 @@
 package main
 
 import (
-  "github.com/AlexGustafsson/upmon/rpc"
-  "github.com/AlexGustafsson/upmon/core"
 	"context"
+	"github.com/AlexGustafsson/upmon/core"
+	"github.com/AlexGustafsson/upmon/rpc"
 )
 
 type upmonServer struct {
-  rpc.UnimplementedUpmonServer
+	rpc.UnimplementedUpmonServer
 }
 
 func (server *upmonServer) SendServicePing(ctx context.Context, ping *rpc.ServicePing) (*rpc.Empty, error) {
-  core.LogDebug("Got request to send service ping")
+	core.LogDebug("Got request to send service ping")
 
-  return &rpc.Empty{}, nil
+	return &rpc.Empty{}, nil
 }
