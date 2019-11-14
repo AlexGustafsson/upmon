@@ -21,6 +21,8 @@ import (
 	"time"
 )
 
+var clients []rpc.UpmonClient;
+
 func main() {
 	config, err := cli.ParseArguments()
 	if err != nil {
@@ -107,10 +109,52 @@ func start(config *core.Config) {
 	waitGroup.Add(1)
 	go listen(tlsConfig, self.Hostname, self.Port, waitGroup)
 
-	waitGroup.Add(1)
-	go connect(tlsConfig, self.Hostname, self.Port, waitGroup)
+	for _, peer := range config.Peers {
+		if peer.Name == "self" {
+			continue
+		}
+
+		waitGroup.Add(1)
+		go connect(tlsConfig, peer.Hostname, peer.Port, waitGroup)
+	}
+
+	for {
+		time.Sleep(5 * time.Second)
+		for _, client := range clients {
+			remoteCheck(client)
+		}
+	}
 
 	waitGroup.Wait()
+}
+
+func remoteCheck(client rpc.UpmonClient) {
+	// Generate UUIDv4
+	serviceID, err := uuid.NewRandom()
+	if err != nil {
+		core.LogError("Unable to generate UUIDv4")
+		return
+	}
+
+	// Format UUIDv4
+	formattedServiceID := serviceID.URN()
+
+	timestamp := ptypes.TimestampNow()
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	result, err := client.SendServicePing(ctx, &rpc.ServicePing{
+		ServiceId: formattedServiceID,
+		Status:    rpc.ServicePing_UP,
+		Timestamp: timestamp,
+	})
+	if err != nil {
+		core.LogError("Unable to send service ping, got error: %v", err)
+		return
+	}
+
+	core.LogDebug("Got result from server: %v", result)
 }
 
 func check(config *core.Config) {
@@ -173,41 +217,18 @@ func check(config *core.Config) {
 func connect(tlsConfig tls.Config, hostname string, port int, waitGroup sync.WaitGroup) {
 	defer waitGroup.Done()
 
+	core.LogDebug("Connecting to %v:%v", hostname, port)
 	connection, err := grpc.Dial(fmt.Sprintf("%s:%d", hostname, port), grpc.WithTransportCredentials(transport.WithConfig(&tlsConfig)))
 	if err != nil {
 		core.LogError("Unable to connect to peer %v:%v, got error: %v", hostname, port, err)
 		return
 	}
-	defer connection.Close()
+	// defer connection.Close()
 
 	client := rpc.NewUpmonClient(connection)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-
-	// Generate UUIDv4
-	serviceID, err := uuid.NewRandom()
-	if err != nil {
-		core.LogError("Unable to generate UUIDv4")
-		return
-	}
-
-	// Format UUIDv4
-	formattedServiceID := serviceID.URN()
-
-	timestamp := ptypes.TimestampNow()
-
-	result, err := client.SendServicePing(ctx, &rpc.ServicePing{
-		ServiceId: formattedServiceID,
-		Status:    rpc.ServicePing_UP,
-		Timestamp: timestamp,
-	})
-	if err != nil {
-		core.LogError("Unable to send service ping")
-		return
-	}
-
-	core.LogDebug("Got result from server: %v", result)
+	core.LogDebug("Successfully connected to %v:%v", hostname, port)
+	clients = append(clients, client)
 }
 
 func listen(tlsConfig tls.Config, hostname string, port int, waitGroup sync.WaitGroup) {
