@@ -1,0 +1,232 @@
+openapi: 3.0.0
+info:
+  description: A cloud-native, distributed uptime monitor written in Go
+  title: upmon
+  version: 0.1.0
+servers:
+- description: Development server
+  url: http://localhost:8080/api/v1
+tags:
+- description: Services-related endpoints
+  name: Services
+- description: Peers-related endpoints
+  name: Peers
+paths:
+  /services:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Services'
+          description: The retrieved services
+      summary: Retrieve all monitored services
+      tags:
+      - Services
+  /services/{serviceId}:
+    get:
+      parameters:
+      - description: The id of the target service
+        explode: false
+        in: path
+        name: serviceId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+          description: The retrieved service
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not found
+      summary: Retrieve a service
+      tags:
+      - Services
+  /services/{serviceId}/status:
+    get:
+      parameters:
+      - description: The id of the target service
+        explode: false
+        in: path
+        name: serviceId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceStatus'
+          description: The retrieved status
+      summary: Retrieve the status of a service
+      tags:
+      - Services
+  /peers:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Peers'
+          description: The retrieved peers
+      summary: Retrieve all peers
+      tags:
+      - Peers
+  /peers/{peerId}:
+    get:
+      parameters:
+      - description: The id of the target peer
+        explode: false
+        in: path
+        name: peerId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Peer'
+          description: The retrieved peer
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not found
+      summary: Retrieve a peer
+      tags:
+      - Peers
+components:
+  parameters:
+    ServiceId:
+      description: The id of the target service
+      explode: false
+      in: path
+      name: serviceId
+      required: true
+      schema:
+        type: string
+      style: simple
+    PeerId:
+      description: The id of the target peer
+      explode: false
+      in: path
+      name: peerId
+      required: true
+      schema:
+        type: string
+      style: simple
+  schemas:
+    Services:
+      example:
+        services:
+        - lastSeen: lastSeen
+          name: name
+          status: status
+        - lastSeen: lastSeen
+          name: name
+          status: status
+      properties:
+        services:
+          items:
+            $ref: '#/components/schemas/Service'
+          type: array
+      required:
+      - services
+      type: object
+    Service:
+      example:
+        lastSeen: lastSeen
+        name: name
+        status: status
+      properties:
+        name:
+          description: Name of the service
+          type: string
+        status:
+          description: The current status of the service
+          type: string
+        lastSeen:
+          description: The timestamp at which the service was last seen responding
+          type: string
+      required:
+      - lastSeen
+      - name
+      - status
+      type: object
+    ServiceStatus:
+      example:
+        status: status
+      properties:
+        status:
+          description: The current status of the service
+          type: string
+      required:
+      - status
+      type: object
+    Peers:
+      example:
+        peers:
+        - address: address
+          port: 0.8008281904610115
+          name: name
+          status: status
+        - address: address
+          port: 0.8008281904610115
+          name: name
+          status: status
+      properties:
+        peers:
+          items:
+            $ref: '#/components/schemas/Peer'
+          type: array
+      required:
+      - peers
+      type: object
+    Peer:
+      example:
+        address: address
+        port: 0.8008281904610115
+        name: name
+        status: status
+      properties:
+        name:
+          description: The name of the peer
+          type: string
+        address:
+          description: The address of the peer
+          type: string
+        port:
+          description: The port of the peer
+          type: number
+        status:
+          description: The status of the peer
+          type: string
+      required:
+      - address
+      - name
+      - port
+      - status
+      type: object
+    ErrorResponse:
+      properties:
+        error:
+          type: string
+      required:
+      - error
+      type: object

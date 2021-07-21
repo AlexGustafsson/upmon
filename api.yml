@@ -1,0 +1,192 @@
+openapi: 3.0.0
+
+
+info:
+  title: upmon
+  description: A cloud-native, distributed uptime monitor written in Go
+  version: 0.1.0
+
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+
+
+paths:
+  /services:
+    get:
+      summary: Retrieve all monitored services
+      tags:
+        - Services
+      responses:
+        "200":
+          description: The retrieved services
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Services"
+  /services/{serviceId}:
+    get:
+      summary: Retrieve a service
+      tags:
+        - Services
+      parameters:
+        - $ref: "#/components/parameters/ServiceId"
+      responses:
+        "200":
+          description: The retrieved service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /services/{serviceId}/status:
+    get:
+      summary: Retrieve the status of a service
+      tags:
+        - Services
+      parameters:
+        - $ref: "#/components/parameters/ServiceId"
+      responses:
+        "200":
+          description: The retrieved status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceStatus"
+
+  /peers:
+    get:
+      summary: Retrieve all peers
+      tags:
+        - Peers
+      responses:
+        "200":
+          description: The retrieved peers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Peers"
+  /peers/{peerId}:
+    get:
+      summary: Retrieve a peer
+      tags:
+        - Peers
+      parameters:
+        - $ref: "#/components/parameters/PeerId"
+      responses:
+        "200":
+          description: The retrieved peer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Peer"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+
+tags:
+  - name: Services
+    description: Services-related endpoints
+  - name: Peers
+    description: Peers-related endpoints
+
+
+components:
+  schemas:
+    Services:
+      type: object
+      required:
+        - services
+      properties:
+        services:
+          type: array
+          items:
+            $ref: "#/components/schemas/Service"
+    Service:
+      type: object
+      required:
+        - name
+        - status
+        - lastSeen
+      properties:
+        name:
+          type: string
+          description: Name of the service
+        status:
+          type: string
+          description: The current status of the service
+        lastSeen:
+          type: string
+          description: The timestamp at which the service was last seen responding
+    ServiceStatus:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          description: The current status of the service
+    Peers:
+      type: object
+      required:
+        - peers
+      properties:
+        peers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Peer"
+    Peer:
+      type: object
+      required:
+        - name
+        - address
+        - port
+        - status
+      properties:
+        name:
+          type: string
+          description: The name of the peer
+        address:
+          type: string
+          description: The address of the peer
+        port:
+          type: number
+          description: The port of the peer
+        status:
+          type: string
+          description: The status of the peer
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+
+
+  parameters:
+    ServiceId:
+      in: path
+      name: serviceId
+      schema:
+        type: string
+      required: true
+      description: The id of the target service
+    PeerId:
+      in: path
+      name: peerId
+      schema:
+        type: string
+      required: true
+      description: The id of the target peer

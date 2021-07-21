@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/AlexGustafsson/upmon/internal/configuration"
+	"github.com/AlexGustafsson/upmon/internal/server"
 	"github.com/hashicorp/memberlist"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -100,9 +101,14 @@ func startCommand(context *cli.Context) error {
 		log.Warning("no peers configured")
 	}
 
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	wg.Wait()
+	if config.Api.Enabled {
+		server := server.NewServer(config, list)
+		server.Start(config.Api.Address, config.Api.Port)
+	} else {
+		wg := &sync.WaitGroup{}
+		wg.Add(1)
+		wg.Wait()
+	}
 
 	return nil
 }

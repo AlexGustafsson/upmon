@@ -7,19 +7,13 @@ import (
 	"github.com/knadh/koanf/providers/file"
 )
 
-func Defaults() *Configuration {
-	return &Configuration{
-		Address: "",
-		Port:    7070,
-	}
-}
-
 func Load(filePath string) (*Configuration, error) {
 	k := koanf.New(".")
 
 	defaults := confmap.Provider(map[string]interface{}{
-		"address": "",
-		"port":    "7070",
+		"address":     "",
+		"port":        "7070",
+		"api.enabled": false,
 	}, ".")
 	err := k.Load(defaults, nil)
 	if err != nil {

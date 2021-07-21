@@ -21,7 +21,7 @@ ifeq ($(shell uname),Darwin)
 	CC=clang
 endif
 
-.PHONY: help build format lint test clean
+.PHONY: help build generate format lint test clean
 
 # Produce a short description of available make commands
 help:
@@ -29,6 +29,12 @@ help:
 
 # Build for the native platform
 build: build/upmon
+
+# Generate clients etc.
+# Requires openapi-generator
+# brew install openapi-generator
+generate: api.yml
+	openapi-generator generate --package-name api --generator-name go --input-spec api.yml --output api
 
 # Format Go code
 format: $(server_source) Makefile

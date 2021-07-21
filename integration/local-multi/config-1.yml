@@ -5,3 +5,7 @@ peers:
     port: 7171
   - address: 127.0.0.1
     port: 7272
+api:
+  enabled: true
+  address: 127.0.0.1
+  port: 8080

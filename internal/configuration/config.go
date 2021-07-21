@@ -12,6 +12,11 @@ type Configuration struct {
 	Address string `koanf:"address"`
 	Port    uint16 `koanf:"port"`
 	Peers   []Peer `koanf:"peers"`
+	Api     struct {
+		Enabled bool   `koanf:"enabled"`
+		Address string `koanf:"address"`
+		Port    uint16 `koanf:"port"`
+	} `koanf:"api"`
 }
 
 func (config *Configuration) MemberlistConfig() *memberlist.Config {
