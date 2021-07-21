@@ -11,4 +11,17 @@ var Commands = []*cli.Command{
 		Usage:  "Show the application's version",
 		Action: versionCommand,
 	},
+	{
+		Name:   "start",
+		Usage:  "Start the monitoring",
+		Action: startCommand,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "config",
+				Aliases: []string{"c"},
+				Usage:   "Path to config file",
+				Value:   "config.yml",
+			},
+		},
+	},
 }
