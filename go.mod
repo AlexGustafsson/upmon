@@ -1,20 +1,8 @@
 module github.com/AlexGustafsson/upmon
 
-go 1.13
+go 1.16
 
 require (
-	github.com/AlexGustafsson/upmon/cli v0.0.0
-	github.com/AlexGustafsson/upmon/core v0.0.0
-	github.com/AlexGustafsson/upmon/rpc v0.0.0
-	github.com/AlexGustafsson/upmon/transport v0.0.0
-	github.com/google/uuid v1.1.1
-	google.golang.org/grpc v1.24.0
+	github.com/sirupsen/logrus v1.8.1 // indirect
+	github.com/urfave/cli/v2 v2.3.0 // indirect
 )
-
-replace github.com/AlexGustafsson/upmon/core => ./core
-
-replace github.com/AlexGustafsson/upmon/rpc => ./rpc
-
-replace github.com/AlexGustafsson/upmon/transport => ./transport
-
-replace github.com/AlexGustafsson/upmon/cli => ./cli
