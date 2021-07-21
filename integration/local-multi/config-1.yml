@@ -9,3 +9,13 @@ api:
   enabled: true
   address: 127.0.0.1
   port: 8080
+services:
+  google:
+    hostname: google.com
+    checks:
+      - type: dns
+      - type: ping
+      - type: http
+        config:
+          expectedStatus: 200
+          timeout: 1s
