@@ -163,6 +163,17 @@ The monitor has the following options.
 | `timeout` | The duration to wait before aborting a ping | No. Defaults to 1s |
 | `interval` | The time to wait between each ping | No. Defaults to 1s |
 
+#### DNS
+
+The dns monitor resolves a hostname and determines whether or not the host is reachavble based on whether or not the name resolves.
+
+The monitor has the following options.
+
+| Name | Description | Required |
+| :--: | :---------: | :------: |
+| `hostname` | The host to ping | Yes |
+| `interval` | The time to wait between each ping | No. Defaults to 1s |
+
 ## Contributing
 <a name="contributing"></a>
 
