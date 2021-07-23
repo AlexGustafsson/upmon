@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/AlexGustafsson/upmon/monitor/core"
+	"github.com/AlexGustafsson/upmon/monitor/dns"
 	"github.com/AlexGustafsson/upmon/monitor/ping"
 )
 
@@ -12,6 +13,8 @@ func NewMonitor(name string, service core.Service, options map[string]interface{
 	switch name {
 	case "ping":
 		return ping.NewMonitor(service, options)
+	case "dns":
+		return dns.NewMonitor(service, options)
 	default:
 		return nil, fmt.Errorf("no such monitor")
 	}

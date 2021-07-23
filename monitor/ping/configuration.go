@@ -8,13 +8,13 @@ import (
 )
 
 type MonitorConfiguration struct {
-	// hostname of the service
+	// Hostname of the service
 	Hostname string `mapstructure:"hostname"`
-	// count is the number of pings to send
+	// Count is the number of pings to send
 	Count int `mapstructure:"count"`
-	// timeout is the duration to wait for a ping to finish, such as "1s"
+	// Timeout is the duration to wait for a ping to finish, such as "1s"
 	Timeout time.Duration `mapstructure:"timeout"`
-	// interval is the interval to use when watching the target, such as "1s"
+	// Interval is the interval to use when watching the target, such as "1s"
 	Interval time.Duration `mapstructure:"interval"`
 }
 

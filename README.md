@@ -131,11 +131,11 @@ services:
         description: "Make sure DNS resolves"
         # Any configuration required by the monitors are specified under options
         options:
-          hostname: google.com
+          hostname: example.com
       - type: ping
         description: "Ensure that the target is reachable"
         options:
-          hostname: google.com
+          hostname: example.com
           count: 1
           # Where applicable, durations are expressed using the human-readable form of 1h2m1s etc.
           timeout: 1s
@@ -143,7 +143,7 @@ services:
           interval: 1s
       - type: http
         options:
-          hostname: google.com
+          hostname: example.com
           expectedStatus: 200
           timeout: 1s
 ```
