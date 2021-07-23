@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/AlexGustafsson/upmon/internal/configuration"
 	"github.com/AlexGustafsson/upmon/internal/guard"
@@ -81,13 +82,24 @@ func startCommand(context *cli.Context) error {
 	}
 
 	if len(config.Peers) > 0 {
-		log.Info("attempting to join cluster")
-		contactedPeers, err := list.Join(config.PeerAddresses())
-		if err != nil {
-			return err
-		}
+		var delay time.Duration = time.Second
+		var connectionError error
+		for i := 0; i < 5; i++ {
+			log.Infof("attempting to join cluster (attempt %d/5)", i+1)
+			contactedPeers, err := list.Join(config.PeerAddresses())
+			if err == nil {
+				log.Infof("made contact with %d peers", contactedPeers)
+				break
+			}
 
-		log.Infof("made contact with %d peers", contactedPeers)
+			log.Errorf("failed to join cluster, trying again in %.0fs", delay.Seconds())
+			time.Sleep(delay)
+			delay *= 2
+			connectionError = err
+		}
+		if connectionError != nil {
+			return connectionError
+		}
 
 		health := list.GetHealthScore()
 		healthDescription := ""
