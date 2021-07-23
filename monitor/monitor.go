@@ -3,16 +3,15 @@ package monitor
 import (
 	"fmt"
 
-	"github.com/AlexGustafsson/upmon/monitor/irc"
+	"github.com/AlexGustafsson/upmon/monitor/core"
 	"github.com/AlexGustafsson/upmon/monitor/ping"
 )
 
-func NewMonitor(name string) (monitor.Monitor, error) {
+// NewMonitor creates a new monitor for a service by name
+func NewMonitor(name string, service core.Service, options map[string]interface{}) (core.Monitor, error) {
 	switch name {
-	case "irc":
-		return irc.NewMonitor()
 	case "ping":
-		return ping.NewMonitor()
+		return ping.NewMonitor(service, options)
 	default:
 		return nil, fmt.Errorf("no such monitor")
 	}

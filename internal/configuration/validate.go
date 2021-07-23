@@ -2,6 +2,7 @@ package configuration
 
 import "fmt"
 
+// Validate a configuration
 func Validate(config *Configuration) []error {
 	errors := make([]error, 0)
 

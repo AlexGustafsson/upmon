@@ -11,11 +11,21 @@ api:
   port: 8080
 services:
   google:
-    hostname: google.com
-    checks:
+    monitors:
       - type: dns
+        name: "DNS check"
+        description: "Make sure DNS resolves"
+        options:
+          hostname: google.com
       - type: ping
+        description: "Ensure that the target is reachable"
+        options:
+          hostname: google.com
+          count: 1
+          timeout: 1s
+          interval: 1s
       - type: http
-        config:
+        options:
+          hostname: google.com
           expectedStatus: 200
           timeout: 1s

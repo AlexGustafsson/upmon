@@ -1,11 +1,18 @@
 package core
 
-type ServiceStatus int
+//go:generate stringer -type=Status
+type Status int
 
 const (
-	StatusUp ServiceStatus = iota
+	StatusUp Status = iota
 	StatusTransitioningUp
 	StatusTransitioningDown
 	StatusDown
 	StatusUnknown
 )
+
+type ServiceStatus struct {
+	Err     error
+	Status  Status
+	Monitor Monitor
+}

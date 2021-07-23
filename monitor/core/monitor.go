@@ -1,7 +1,5 @@
 package core
 
-import "time"
-
 type Monitor interface {
 	// Name of the monitor
 	Name() string
@@ -10,7 +8,11 @@ type Monitor interface {
 	// Version of the monitor
 	Version() string
 	// Check the status of a service
-	CheckImmediate(service Service) (ServiceStatus, error)
+	CheckImmediate() (Status, error)
 	// Watch the status of a service continously
-	Watch(service Service, interval time.Duration, delegate WatchDelegate) error
+	Watch(update chan<- *ServiceStatus, stop <-chan bool) error
+	// Service is the service the monitor monitors
+	Service() Service
+	// Config is the configuration used for the monitor
+	Config() MonitorConfiguration
 }

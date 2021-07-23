@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/AlexGustafsson/upmon/internal/configuration"
+	"github.com/AlexGustafsson/upmon/internal/guard"
 	"github.com/AlexGustafsson/upmon/internal/server"
 	"github.com/hashicorp/memberlist"
 	log "github.com/sirupsen/logrus"
@@ -101,14 +102,22 @@ func startCommand(context *cli.Context) error {
 		log.Warning("no peers configured")
 	}
 
+	guard, err := guard.NewGuard(config)
+	if err != nil {
+		return err
+	}
+
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	guard.Start()
+
 	if config.Api.Enabled {
 		server := server.NewServer(config, list)
-		server.Start(config.Api.Address, config.Api.Port)
-	} else {
-		wg := &sync.WaitGroup{}
 		wg.Add(1)
-		wg.Wait()
+		go server.Start(config.Api.Address, config.Api.Port)
 	}
+
+	wg.Wait()
 
 	return nil
 }

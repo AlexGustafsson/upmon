@@ -1,12 +1,15 @@
 package configuration
 
 import (
+	"fmt"
+
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/confmap"
 	"github.com/knadh/koanf/providers/file"
 )
 
+// Load a configuration from a YAML file
 func Load(filePath string) (*Configuration, error) {
 	k := koanf.New(".")
 
@@ -30,6 +33,15 @@ func Load(filePath string) (*Configuration, error) {
 	err = k.UnmarshalWithConf("", &config, koanf.UnmarshalConf{Tag: "koanf"})
 	if err != nil {
 		return nil, err
+	}
+
+	// Set default names if none exist
+	for _, service := range config.Services {
+		for _, monitor := range service.Monitors {
+			if monitor.Name == "" {
+				monitor.Name = fmt.Sprintf("unnamed '%s' monitor", monitor.Type)
+			}
+		}
 	}
 
 	return config, nil

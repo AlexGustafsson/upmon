@@ -54,6 +54,7 @@ test: $(server_source) Makefile
 
 # Build for the native platform
 build/upmon: $(server_source) Makefile
+	go generate ./...
 	go build $(BUILD_FLAGS) -o $@ cmd/upmon.go
 
 # Clean all dynamically created files
