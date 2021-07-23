@@ -1,6 +1,10 @@
 package configuration
 
-import "github.com/hashicorp/memberlist"
+import (
+	"fmt"
+
+	"github.com/hashicorp/memberlist"
+)
 
 // PeerConfiguration configures a peer in the cluster
 type PeerConfiguration struct {
@@ -66,7 +70,7 @@ func (config *Configuration) MemberlistConfig() *memberlist.Config {
 func (config *Configuration) PeerAddresses() []string {
 	addresses := make([]string, len(config.Peers))
 	for i, peer := range config.Peers {
-		addresses[i] = peer.Address
+		addresses[i] = fmt.Sprintf("%s:%d", peer.Address, peer.Port)
 	}
 	return addresses
 }
