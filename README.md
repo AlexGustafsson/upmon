@@ -94,6 +94,10 @@ Any help with the project is more than welcome. The project is still in its infa
 
 ### Development
 
+Dependencies beyond Go and Make:
+* [stringer](https://pkg.go.dev/golang.org/x/tools/cmd/stringer) - used to generate the `String()` method for `iota`s
+* [openapi-generator](https://github.com/OpenAPITools/openapi-generator) - used to generate the models and client for the REST API
+
 ```sh
 # Clone the repository
 https://github.com/AlexGustafsson/upmon.git && cd upmon
@@ -105,6 +109,9 @@ make help
 
 # Build the server
 make build
+
+# Generate API clients etc.
+make generate
 
 ## Code quality
 
