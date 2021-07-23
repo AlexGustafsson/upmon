@@ -61,14 +61,15 @@ func (server *Server) Start(address string, port uint16) error {
 	app.Get("/api/v1/peers", func(c *fiber.Ctx) error {
 		peers := make([]api.Peer, len(server.list.Members()))
 
-		for _, member := range server.list.Members() {
+		fmt.Printf("Got %d members vs %d members", server.list.NumMembers(), len(server.list.Members()))
+		for i, member := range server.list.Members() {
 			peer := api.Peer{
 				Name:    member.Name,
 				Address: member.Address(),
 				Port:    float32(member.Port),
 				Status:  fmt.Sprintf("%d", member.State),
 			}
-			peers = append(peers, peer)
+			peers[i] = peer
 		}
 
 		response := api.NewPeers(peers)
