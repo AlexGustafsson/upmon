@@ -89,7 +89,7 @@ func startCommand(context *cli.Context) error {
 			contactedPeers, err := list.Join(config.PeerAddresses())
 			if err == nil {
 				log.Infof("made contact with %d peers", contactedPeers)
-				err = nil
+				connectionError = nil
 				break
 			}
 
