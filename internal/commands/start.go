@@ -82,12 +82,12 @@ func startCommand(context *cli.Context) error {
 
 	if len(config.Peers) > 0 {
 		log.Info("attempting to join cluster")
-		contacts, err := list.Join(config.PeerAddresses())
+		contactedPeers, err := list.Join(config.PeerAddresses())
 		if err != nil {
 			return err
 		}
 
-		log.Infof("made contact with %d peers", contacts)
+		log.Infof("made contact with %d peers", contactedPeers)
 
 		health := list.GetHealthScore()
 		healthDescription := ""
@@ -109,7 +109,7 @@ func startCommand(context *cli.Context) error {
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	guard.Start()
+	go guard.Start()
 
 	if config.Api.Enabled {
 		server := server.NewServer(config, list)
