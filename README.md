@@ -111,11 +111,14 @@ Below you may find a documented example configuration. Further examples may be f
 ```yaml
 name: Alfa
 port: 7070
+# To form a cluster, more than one peer is required. All peers are not required
+# to be specified in the list as they peers will inform each other when a node joins
 peers:
   - address: 127.0.0.1
     port: 7171
   - address: 127.0.0.1
     port: 7272
+# The API is optional and disabled by default
 api:
   enabled: true
   address: 127.0.0.1
