@@ -174,6 +174,12 @@ The monitor has the following options.
 | `hostname` | The host to ping | Yes |
 | `interval` | The time to wait between each ping | No. Defaults to 1s |
 
+### API
+
+The API is documented in `api.yml` using OpenAPI 3.0.
+
+You may use tools such as the open source [Insomnia](https://github.com/Kong/insomnia) to easily work with the API, or Swagger UI to explore the API.
+
 ## Contributing
 <a name="contributing"></a>
 
