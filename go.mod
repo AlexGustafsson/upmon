@@ -5,9 +5,8 @@ go 1.16
 require (
 	github.com/AlexGustafsson/upmon/api v0.0.0
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
-	github.com/go-ping/ping v0.0.0-20210506233800-ff8be3320020 // indirect
+	github.com/go-ping/ping v0.0.0-20210506233800-ff8be3320020
 	github.com/gofiber/fiber/v2 v2.15.0
-	github.com/google/btree v1.0.0 // indirect
 	github.com/hashicorp/memberlist v0.2.4
 	github.com/knadh/koanf v1.2.0
 	github.com/mitchellh/mapstructure v1.4.1
