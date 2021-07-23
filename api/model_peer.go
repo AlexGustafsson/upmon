@@ -60,7 +60,7 @@ func (o *Peer) GetName() string {
 // GetNameOk returns a tuple with the Name field value
 // and a boolean to check if the value has been set.
 func (o *Peer) GetNameOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Name, true
@@ -84,7 +84,7 @@ func (o *Peer) GetAddress() string {
 // GetAddressOk returns a tuple with the Address field value
 // and a boolean to check if the value has been set.
 func (o *Peer) GetAddressOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Address, true
@@ -108,7 +108,7 @@ func (o *Peer) GetPort() float32 {
 // GetPortOk returns a tuple with the Port field value
 // and a boolean to check if the value has been set.
 func (o *Peer) GetPortOk() (*float32, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Port, true
@@ -132,7 +132,7 @@ func (o *Peer) GetStatus() string {
 // GetStatusOk returns a tuple with the Status field value
 // and a boolean to check if the value has been set.
 func (o *Peer) GetStatusOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Status, true
@@ -195,5 +195,3 @@ func (v *NullablePeer) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

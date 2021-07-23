@@ -28,10 +28,9 @@ var (
 type ServicesApiService service
 
 type ApiServicesGetRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ServicesApiService
 }
-
 
 func (r ApiServicesGetRequest) Execute() (Services, *_nethttp.Response, error) {
 	return r.ApiService.ServicesGetExecute(r)
@@ -45,7 +44,7 @@ func (r ApiServicesGetRequest) Execute() (Services, *_nethttp.Response, error) {
 func (a *ServicesApiService) ServicesGet(ctx _context.Context) ApiServicesGetRequest {
 	return ApiServicesGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -129,11 +128,10 @@ func (a *ServicesApiService) ServicesGetExecute(r ApiServicesGetRequest) (Servic
 }
 
 type ApiServicesServiceIdGetRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ServicesApiService
-	serviceId string
+	serviceId  string
 }
-
 
 func (r ApiServicesServiceIdGetRequest) Execute() (Service, *_nethttp.Response, error) {
 	return r.ApiService.ServicesServiceIdGetExecute(r)
@@ -148,8 +146,8 @@ func (r ApiServicesServiceIdGetRequest) Execute() (Service, *_nethttp.Response, 
 func (a *ServicesApiService) ServicesServiceIdGet(ctx _context.Context, serviceId string) ApiServicesServiceIdGetRequest {
 	return ApiServicesServiceIdGetRequest{
 		ApiService: a,
-		ctx: ctx,
-		serviceId: serviceId,
+		ctx:        ctx,
+		serviceId:  serviceId,
 	}
 }
 
@@ -243,11 +241,10 @@ func (a *ServicesApiService) ServicesServiceIdGetExecute(r ApiServicesServiceIdG
 }
 
 type ApiServicesServiceIdStatusGetRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ServicesApiService
-	serviceId string
+	serviceId  string
 }
-
 
 func (r ApiServicesServiceIdStatusGetRequest) Execute() (ServiceStatus, *_nethttp.Response, error) {
 	return r.ApiService.ServicesServiceIdStatusGetExecute(r)
@@ -262,8 +259,8 @@ func (r ApiServicesServiceIdStatusGetRequest) Execute() (ServiceStatus, *_nethtt
 func (a *ServicesApiService) ServicesServiceIdStatusGet(ctx _context.Context, serviceId string) ApiServicesServiceIdStatusGetRequest {
 	return ApiServicesServiceIdStatusGetRequest{
 		ApiService: a,
-		ctx: ctx,
-		serviceId: serviceId,
+		ctx:        ctx,
+		serviceId:  serviceId,
 	}
 }
 
