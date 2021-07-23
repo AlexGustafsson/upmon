@@ -81,11 +81,87 @@ make build
 ## Usage
 <a name="usage"></a>
 
-_Note: This project is still actively being developed. The documentation is an ongoing progress._
+```
+Usage: upmon [global options] command [command options] [arguments]
+
+A cloud-native, distributed uptime monitor
+
+Version: v0.1.0, build 49a0a3b. Built Fri Jul 23 11:08:55 CEST 2021 using go version go1.16.5 darwin/amd64
+
+Options:
+  --verbose   Enable verbose logging (default: false)
+  --help, -h  show help (default: false)
+
+Commands:
+  start    Start the monitoring
+  version  Show the application's version
+  help     Shows a list of commands or help for one command
+
+Run 'upmon help command' for more information on a command.
+```
 
 ## Documentation
 
-Upcoming.
+Subject to change.
+
+### Configuration
+
+Below you may find a documented example configuration. Further examples may be found in the integration directory.
+
+```yaml
+name: Alfa
+port: 7070
+peers:
+  - address: 127.0.0.1
+    port: 7171
+  - address: 127.0.0.1
+    port: 7272
+api:
+  enabled: true
+  address: 127.0.0.1
+  port: 8080
+services:
+  # Services may be concrete services or a loose connection of applications etc.
+  "example.com":
+    monitors:
+      # Each service may have any amount of monitors attached. Each monitor has a type,
+      # an optional name and an optional description
+      - type: dns
+        name: "DNS check"
+        description: "Make sure DNS resolves"
+        # Any configuration required by the monitors are specified under options
+        options:
+          hostname: google.com
+      - type: ping
+        description: "Ensure that the target is reachable"
+        options:
+          hostname: google.com
+          count: 1
+          # Where applicable, durations are expressed using the human-readable form of 1h2m1s etc.
+          timeout: 1s
+          # Many monitors have an interval option. The interval specifies how often the monitor should check the service
+          interval: 1s
+      - type: http
+        options:
+          hostname: google.com
+          expectedStatus: 200
+          timeout: 1s
+```
+
+### Monitors
+
+#### Ping
+
+The pinging monitor sends ICMP pings to a host and determines whether or not the host is responding based on whether or not the packets are lost.
+
+The monitor has the following options.
+
+| Name | Description | Required |
+| :--: | :---------: | :------: |
+| `hostname` | The host to ping | Yes |
+| `count` | The number of pings to send each time the host is checked | No. Defaults to 1 |
+| `timeout` | The duration to wait before aborting a ping | No. Defaults to 1s |
+| `interval` | The time to wait between each ping | No. Defaults to 1s |
 
 ## Contributing
 <a name="contributing"></a>
