@@ -64,7 +64,7 @@ func (server *Server) Start(address string, port uint16) error {
 		for _, member := range server.list.Members() {
 			peer := api.Peer{
 				Name:    member.Name,
-				Address: string(member.Addr),
+				Address: member.Address(),
 				Port:    float32(member.Port),
 				Status:  fmt.Sprintf("%d", member.State),
 			}
