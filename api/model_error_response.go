@@ -50,7 +50,7 @@ func (o *ErrorResponse) GetError() string {
 // GetErrorOk returns a tuple with the Error field value
 // and a boolean to check if the value has been set.
 func (o *ErrorResponse) GetErrorOk() (*string, bool) {
-	if o == nil {
+	if o == nil  {
 		return nil, false
 	}
 	return &o.Error, true
@@ -104,3 +104,5 @@ func (v *NullableErrorResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

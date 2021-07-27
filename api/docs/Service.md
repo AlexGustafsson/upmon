@@ -5,6 +5,8 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Name** | **string** | Name of the service | 
+**Description** | Pointer to **string** | Description of the service | [optional] 
+**Private** | **bool** | Whether or not the config is shared with the cluster | 
 **Status** | **string** | The current status of the service | 
 **LastSeen** | **string** | The timestamp at which the service was last seen responding | 
 
@@ -12,7 +14,7 @@ Name | Type | Description | Notes
 
 ### NewService
 
-`func NewService(name string, status string, lastSeen string, ) *Service`
+`func NewService(name string, private bool, status string, lastSeen string, ) *Service`
 
 NewService instantiates a new Service object
 This constructor will assign default values to properties that have it defined,
@@ -45,6 +47,51 @@ and a boolean to check if the value has been set.
 `func (o *Service) SetName(v string)`
 
 SetName sets Name field to given value.
+
+
+### GetDescription
+
+`func (o *Service) GetDescription() string`
+
+GetDescription returns the Description field if non-nil, zero value otherwise.
+
+### GetDescriptionOk
+
+`func (o *Service) GetDescriptionOk() (*string, bool)`
+
+GetDescriptionOk returns a tuple with the Description field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetDescription
+
+`func (o *Service) SetDescription(v string)`
+
+SetDescription sets Description field to given value.
+
+### HasDescription
+
+`func (o *Service) HasDescription() bool`
+
+HasDescription returns a boolean if a field has been set.
+
+### GetPrivate
+
+`func (o *Service) GetPrivate() bool`
+
+GetPrivate returns the Private field if non-nil, zero value otherwise.
+
+### GetPrivateOk
+
+`func (o *Service) GetPrivateOk() (*bool, bool)`
+
+GetPrivateOk returns a tuple with the Private field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetPrivate
+
+`func (o *Service) SetPrivate(v bool)`
+
+SetPrivate sets Private field to given value.
 
 
 ### GetStatus

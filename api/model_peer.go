@@ -18,10 +18,8 @@ import (
 type Peer struct {
 	// The name of the peer
 	Name string `json:"name"`
-	// The address of the peer
-	Address string `json:"address"`
-	// The port of the peer
-	Port float32 `json:"port"`
+	// The address and port of the peer
+	Bind string `json:"bind"`
 	// The status of the peer
 	Status string `json:"status"`
 }
@@ -30,11 +28,10 @@ type Peer struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewPeer(name string, address string, port float32, status string) *Peer {
+func NewPeer(name string, bind string, status string) *Peer {
 	this := Peer{}
 	this.Name = name
-	this.Address = address
-	this.Port = port
+	this.Bind = bind
 	this.Status = status
 	return &this
 }
@@ -60,7 +57,7 @@ func (o *Peer) GetName() string {
 // GetNameOk returns a tuple with the Name field value
 // and a boolean to check if the value has been set.
 func (o *Peer) GetNameOk() (*string, bool) {
-	if o == nil {
+	if o == nil  {
 		return nil, false
 	}
 	return &o.Name, true
@@ -71,52 +68,28 @@ func (o *Peer) SetName(v string) {
 	o.Name = v
 }
 
-// GetAddress returns the Address field value
-func (o *Peer) GetAddress() string {
+// GetBind returns the Bind field value
+func (o *Peer) GetBind() string {
 	if o == nil {
 		var ret string
 		return ret
 	}
 
-	return o.Address
+	return o.Bind
 }
 
-// GetAddressOk returns a tuple with the Address field value
+// GetBindOk returns a tuple with the Bind field value
 // and a boolean to check if the value has been set.
-func (o *Peer) GetAddressOk() (*string, bool) {
-	if o == nil {
+func (o *Peer) GetBindOk() (*string, bool) {
+	if o == nil  {
 		return nil, false
 	}
-	return &o.Address, true
+	return &o.Bind, true
 }
 
-// SetAddress sets field value
-func (o *Peer) SetAddress(v string) {
-	o.Address = v
-}
-
-// GetPort returns the Port field value
-func (o *Peer) GetPort() float32 {
-	if o == nil {
-		var ret float32
-		return ret
-	}
-
-	return o.Port
-}
-
-// GetPortOk returns a tuple with the Port field value
-// and a boolean to check if the value has been set.
-func (o *Peer) GetPortOk() (*float32, bool) {
-	if o == nil {
-		return nil, false
-	}
-	return &o.Port, true
-}
-
-// SetPort sets field value
-func (o *Peer) SetPort(v float32) {
-	o.Port = v
+// SetBind sets field value
+func (o *Peer) SetBind(v string) {
+	o.Bind = v
 }
 
 // GetStatus returns the Status field value
@@ -132,7 +105,7 @@ func (o *Peer) GetStatus() string {
 // GetStatusOk returns a tuple with the Status field value
 // and a boolean to check if the value has been set.
 func (o *Peer) GetStatusOk() (*string, bool) {
-	if o == nil {
+	if o == nil  {
 		return nil, false
 	}
 	return &o.Status, true
@@ -149,10 +122,7 @@ func (o Peer) MarshalJSON() ([]byte, error) {
 		toSerialize["name"] = o.Name
 	}
 	if true {
-		toSerialize["address"] = o.Address
-	}
-	if true {
-		toSerialize["port"] = o.Port
+		toSerialize["bind"] = o.Bind
 	}
 	if true {
 		toSerialize["status"] = o.Status
@@ -195,3 +165,5 @@ func (v *NullablePeer) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

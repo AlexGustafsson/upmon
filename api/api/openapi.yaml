@@ -135,11 +135,15 @@ components:
     Services:
       example:
         services:
-        - lastSeen: lastSeen
+        - private: ""
+          lastSeen: lastSeen
           name: name
+          description: description
           status: status
-        - lastSeen: lastSeen
+        - private: ""
+          lastSeen: lastSeen
           name: name
+          description: description
           status: status
       properties:
         services:
@@ -151,13 +155,21 @@ components:
       type: object
     Service:
       example:
+        private: ""
         lastSeen: lastSeen
         name: name
+        description: description
         status: status
       properties:
         name:
           description: Name of the service
           type: string
+        description:
+          description: Description of the service
+          type: string
+        private:
+          description: Whether or not the config is shared with the cluster
+          type: bool
         status:
           description: The current status of the service
           type: string
@@ -167,6 +179,8 @@ components:
       required:
       - lastSeen
       - name
+      - private
+      - status
       - status
       type: object
     ServiceStatus:
@@ -182,12 +196,10 @@ components:
     Peers:
       example:
         peers:
-        - address: address
-          port: 0.8008281904610115
+        - bind: bind
           name: name
           status: status
-        - address: address
-          port: 0.8008281904610115
+        - bind: bind
           name: name
           status: status
       properties:
@@ -200,27 +212,22 @@ components:
       type: object
     Peer:
       example:
-        address: address
-        port: 0.8008281904610115
+        bind: bind
         name: name
         status: status
       properties:
         name:
           description: The name of the peer
           type: string
-        address:
-          description: The address of the peer
+        bind:
+          description: The address and port of the peer
           type: string
-        port:
-          description: The port of the peer
-          type: number
         status:
           description: The status of the peer
           type: string
       required:
-      - address
+      - bind
       - name
-      - port
       - status
       type: object
     ErrorResponse:

@@ -5,15 +5,14 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Name** | **string** | The name of the peer | 
-**Address** | **string** | The address of the peer | 
-**Port** | **float32** | The port of the peer | 
+**Bind** | **string** | The address and port of the peer | 
 **Status** | **string** | The status of the peer | 
 
 ## Methods
 
 ### NewPeer
 
-`func NewPeer(name string, address string, port float32, status string, ) *Peer`
+`func NewPeer(name string, bind string, status string, ) *Peer`
 
 NewPeer instantiates a new Peer object
 This constructor will assign default values to properties that have it defined,
@@ -48,44 +47,24 @@ and a boolean to check if the value has been set.
 SetName sets Name field to given value.
 
 
-### GetAddress
+### GetBind
 
-`func (o *Peer) GetAddress() string`
+`func (o *Peer) GetBind() string`
 
-GetAddress returns the Address field if non-nil, zero value otherwise.
+GetBind returns the Bind field if non-nil, zero value otherwise.
 
-### GetAddressOk
+### GetBindOk
 
-`func (o *Peer) GetAddressOk() (*string, bool)`
+`func (o *Peer) GetBindOk() (*string, bool)`
 
-GetAddressOk returns a tuple with the Address field if it's non-nil, zero value otherwise
+GetBindOk returns a tuple with the Bind field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetAddress
+### SetBind
 
-`func (o *Peer) SetAddress(v string)`
+`func (o *Peer) SetBind(v string)`
 
-SetAddress sets Address field to given value.
-
-
-### GetPort
-
-`func (o *Peer) GetPort() float32`
-
-GetPort returns the Port field if non-nil, zero value otherwise.
-
-### GetPortOk
-
-`func (o *Peer) GetPortOk() (*float32, bool)`
-
-GetPortOk returns a tuple with the Port field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetPort
-
-`func (o *Peer) SetPort(v float32)`
-
-SetPort sets Port field to given value.
+SetBind sets Bind field to given value.
 
 
 ### GetStatus

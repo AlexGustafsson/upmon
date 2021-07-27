@@ -1,9 +1,7 @@
 name: Charlie
-port: 7272
+bind: "127.0.0.1:7272"
 peers:
-  - address: "127.0.0.1"
-    port: 7171
+  - "127.0.0.1:7171"
 api:
   enabled: true
-  address: "127.0.0.1"
-  port: 8282
+  bind: "127.0.0.1:8282"

@@ -1,18 +1,11 @@
 package configuration
 
 import (
-	"fmt"
+	"net"
+	"strconv"
 
 	"github.com/hashicorp/memberlist"
 )
-
-// PeerConfiguration configures a peer in the cluster
-type PeerConfiguration struct {
-	// Address is the address used for cluster communication
-	Address string `koanf:"address"`
-	// Port is the port used for cluster communication
-	Port uint16 `koanf:"port"`
-}
 
 // MonitorConfiguration configures a monitor for a service
 type MonitorConfiguration struct {
@@ -32,45 +25,43 @@ type ServiceConfiguration struct {
 	Description string `koanf:"description"`
 	// Monitors is a list of monitors to use to monitor the service
 	Monitors []MonitorConfiguration `koanf:"monitors"`
+	// Private indicates whether or not the service configuration is shared with the cluster
+	Private bool `koan:"private"`
 }
 
 // Configuration of the service
 type Configuration struct {
 	// Name is the name of the node
 	Name string `koanf:"name"`
-	// Address is the address used for cluster communication
-	Address string `koanf:"address"`
-	// Port is the port used for cluster communication
-	Port uint16 `koanf:"port"`
-	// Peers is a list of peers that are part of the cluster
-	Peers []PeerConfiguration `koanf:"peers"`
+	// Bind is the address and port used for cluster communication
+	Bind string `koanf:"bind"`
+	// Peers is a list of peers' bind addresses and ports
+	Peers []string `koanf:"peers"`
 	// Services contains all the configured services, mapped by their name
 	Services map[string]ServiceConfiguration `koanf:"services"`
 	// Api contains configuration for the REST API
 	Api struct {
 		// Enabled controls whether or not the REST API is enabled
 		Enabled bool `koanf:"enabled"`
-		// Address is the address used to expose the API
-		Address string `koanf:"address"`
-		// Port is the port used to expose the API
-		Port uint16 `koanf:"port"`
+		// Bind is the address and port used for cluster communication
+		Bind string `koanf:"bind"`
 	} `koanf:"api"`
 }
 
 // MemberlistConfig creates a configuration for the memberlist gossip library
-func (config *Configuration) MemberlistConfig() *memberlist.Config {
+func (config *Configuration) MemberlistConfig() (*memberlist.Config, error) {
 	memberlistConfig := memberlist.DefaultWANConfig()
 	memberlistConfig.Name = config.Name
-	memberlistConfig.BindAddr = config.Address
-	memberlistConfig.BindPort = int(config.Port)
-	return memberlistConfig
-}
-
-// PeerAddresses contains any configured peers' addresses
-func (config *Configuration) PeerAddresses() []string {
-	addresses := make([]string, len(config.Peers))
-	for i, peer := range config.Peers {
-		addresses[i] = fmt.Sprintf("%s:%d", peer.Address, peer.Port)
+	host, portString, err := net.SplitHostPort(config.Bind)
+	if err != nil {
+		return nil, err
 	}
-	return addresses
+	port, err := strconv.ParseInt(portString, 10, 32)
+	if err != nil {
+		return nil, err
+	}
+
+	memberlistConfig.BindAddr = host
+	memberlistConfig.BindPort = int(port)
+	return memberlistConfig, nil
 }

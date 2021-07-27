@@ -70,11 +70,14 @@ func startCommand(context *cli.Context) error {
 		},
 	})
 
-	memberlistConfig := config.MemberlistConfig()
+	memberlistConfig, err := config.MemberlistConfig()
+	if err != nil {
+		return err
+	}
 	memberlistConfig.Events = &eventDelegate{}
 	memberlistConfig.Conflict = &conflictDelegate{}
 
-	log.WithFields(log.Fields{"address": config.Address, "port": config.Port}).Info("listening")
+	log.WithFields(log.Fields{"bind": config.Bind}).Info("listening")
 
 	list, err := memberlist.Create(memberlistConfig)
 	if err != nil {
@@ -86,7 +89,7 @@ func startCommand(context *cli.Context) error {
 		var connectionError error
 		for i := 0; i < 5; i++ {
 			log.Infof("attempting to join cluster (attempt %d/5)", i+1)
-			contactedPeers, err := list.Join(config.PeerAddresses())
+			contactedPeers, err := list.Join(config.Peers)
 			if err == nil {
 				log.Infof("made contact with %d peers", contactedPeers)
 				connectionError = nil
@@ -127,7 +130,7 @@ func startCommand(context *cli.Context) error {
 	if config.Api.Enabled {
 		server := server.NewServer(config, list)
 		wg.Add(1)
-		go server.Start(config.Api.Address, config.Api.Port)
+		go server.Start(config.Api.Bind)
 	}
 
 	wg.Wait()

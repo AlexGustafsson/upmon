@@ -22,7 +22,7 @@ func NewServer(config *configuration.Configuration, list *memberlist.Memberlist)
 	}
 }
 
-func (server *Server) Start(address string, port uint16) error {
+func (server *Server) Start(bind string) error {
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
 	})
@@ -64,10 +64,9 @@ func (server *Server) Start(address string, port uint16) error {
 		fmt.Printf("Got %d members vs %d members", server.list.NumMembers(), len(server.list.Members()))
 		for i, member := range server.list.Members() {
 			peer := api.Peer{
-				Name:    member.Name,
-				Address: member.Address(),
-				Port:    float32(member.Port),
-				Status:  fmt.Sprintf("%d", member.State),
+				Name:   member.Name,
+				Bind:   member.FullAddress().Addr,
+				Status: fmt.Sprintf("%d", member.State),
 			}
 			peers[i] = peer
 		}
@@ -91,6 +90,6 @@ func (server *Server) Start(address string, port uint16) error {
 		return c.Status(404).Send(json)
 	})
 
-	log.Infof("starting server on %s:%d", address, port)
-	return app.Listen(fmt.Sprintf("%s:%d", address, port))
+	log.Infof("starting server on %s", bind)
+	return app.Listen(bind)
 }

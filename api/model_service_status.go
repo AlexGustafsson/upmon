@@ -51,7 +51,7 @@ func (o *ServiceStatus) GetStatus() string {
 // GetStatusOk returns a tuple with the Status field value
 // and a boolean to check if the value has been set.
 func (o *ServiceStatus) GetStatusOk() (*string, bool) {
-	if o == nil {
+	if o == nil  {
 		return nil, false
 	}
 	return &o.Status, true
@@ -105,3 +105,5 @@ func (v *NullableServiceStatus) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

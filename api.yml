@@ -117,11 +117,19 @@ components:
       required:
         - name
         - status
+        - private
+        - status
         - lastSeen
       properties:
         name:
           type: string
           description: Name of the service
+        description:
+          type: string
+          description: Description of the service
+        private:
+          type: bool
+          description: Whether or not the config is shared with the cluster
         status:
           type: string
           description: The current status of the service
@@ -149,19 +157,15 @@ components:
       type: object
       required:
         - name
-        - address
-        - port
+        - bind
         - status
       properties:
         name:
           type: string
           description: The name of the peer
-        address:
+        bind:
           type: string
-          description: The address of the peer
-        port:
-          type: number
-          description: The port of the peer
+          description: The address and port of the peer
         status:
           type: string
           description: The status of the peer

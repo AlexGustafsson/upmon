@@ -1,16 +1,16 @@
 name: Alfa
-port: 7070
+bind: "127.0.0.1:7070"
 peers:
-  - address: "127.0.0.1"
-    port: 7171
-  - address: "127.0.0.1"
-    port: 7272
+  - "127.0.0.1:7171"
+  - "127.0.0.1:7272"
 api:
   enabled: true
-  address: "127.0.0.1"
-  port: 8080
+  bind: "127.0.0.1:8080"
 services:
   google:
+    name: "Google"
+    description: "Google monitoring"
+    private: false
     monitors:
       - type: dns
         name: "DNS check"
