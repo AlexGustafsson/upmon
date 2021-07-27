@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
@@ -14,10 +15,43 @@ import (
 )
 
 type eventDelegate struct {
+	self     string
+	welcomer func(node *memberlist.Node)
+}
+
+type delegate struct{}
+
+func (delegate *delegate) NodeMeta(limit int) []byte {
+	bytes := make([]byte, 0)
+	return bytes
+}
+
+func (delegate *delegate) NotifyMsg(message []byte) {
+	// TODO: apply config of distributed services
+	log.Info("received message: %v", string(message))
+}
+
+func (delegate *delegate) GetBroadcasts(overhead, limit int) [][]byte {
+	broadcasts := make([][]byte, 0)
+	return broadcasts
+}
+
+func (delegate *delegate) LocalState(join bool) []byte {
+	bytes := make([]byte, 0)
+	return bytes
+}
+
+func (delegate *delegate) MergeRemoteState(buf []byte, join bool) {
+
 }
 
 func (delegate *eventDelegate) NotifyJoin(node *memberlist.Node) {
 	log.WithFields(log.Fields{"name": node.Name, "address": node.Addr, "port": node.Port}).Info("node joined")
+	if node.Name != delegate.self {
+		if delegate.welcomer != nil {
+			delegate.welcomer(node)
+		}
+	}
 }
 
 func (delegate *eventDelegate) NotifyLeave(node *memberlist.Node) {
@@ -74,14 +108,33 @@ func startCommand(context *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	memberlistConfig.Events = &eventDelegate{}
+	eventDelegate := &eventDelegate{
+		self: config.Name,
+	}
+	memberlistConfig.Events = eventDelegate
 	memberlistConfig.Conflict = &conflictDelegate{}
+	memberlistConfig.Delegate = &delegate{}
 
 	log.WithFields(log.Fields{"bind": config.Bind}).Info("listening")
 
 	list, err := memberlist.Create(memberlistConfig)
 	if err != nil {
 		return err
+	}
+
+	eventDelegate.welcomer = func(node *memberlist.Node) {
+		log.WithFields(log.Fields{"name": node.Name}).Info("welcoming node")
+		message, err := json.Marshal(config)
+		if err != nil {
+			log.WithFields(log.Fields{"name": node.Name}).Errorf("failed to welcome node: %v", err)
+			return
+		}
+
+		err = list.SendReliable(node, message)
+		if err != nil {
+			log.WithFields(log.Fields{"name": node.Name}).Errorf("failed to welcome node: %v", err)
+			return
+		}
 	}
 
 	if len(config.Peers) > 0 {
