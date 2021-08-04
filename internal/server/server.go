@@ -4,21 +4,21 @@ import (
 	"fmt"
 
 	"github.com/AlexGustafsson/upmon/api"
+	"github.com/AlexGustafsson/upmon/internal/clustering"
 	"github.com/AlexGustafsson/upmon/internal/configuration"
 	"github.com/gofiber/fiber/v2"
-	"github.com/hashicorp/memberlist"
 	log "github.com/sirupsen/logrus"
 )
 
 type Server struct {
-	config *configuration.Configuration
-	list   *memberlist.Memberlist
+	config  *configuration.Configuration
+	cluster *clustering.Cluster
 }
 
-func NewServer(config *configuration.Configuration, list *memberlist.Memberlist) *Server {
+func NewServer(config *configuration.Configuration, cluster *clustering.Cluster) *Server {
 	return &Server{
-		config: config,
-		list:   list,
+		config:  config,
+		cluster: cluster,
 	}
 }
 
@@ -59,10 +59,10 @@ func (server *Server) Start(bind string) error {
 	})
 
 	app.Get("/api/v1/peers", func(c *fiber.Ctx) error {
-		peers := make([]api.Peer, len(server.list.Members()))
+		peers := make([]api.Peer, len(server.cluster.Memberlist.Members()))
 
-		fmt.Printf("Got %d members vs %d members", server.list.NumMembers(), len(server.list.Members()))
-		for i, member := range server.list.Members() {
+		fmt.Printf("Got %d members vs %d members", server.cluster.Memberlist.NumMembers(), len(server.cluster.Memberlist.Members()))
+		for i, member := range server.cluster.Memberlist.Members() {
 			peer := api.Peer{
 				Name:   member.Name,
 				Bind:   member.FullAddress().Addr,
