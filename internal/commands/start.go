@@ -48,12 +48,7 @@ func startCommand(context *cli.Context) error {
 		},
 	})
 
-	memberlistConfig, err := config.MemberlistConfig()
-	if err != nil {
-		return err
-	}
-
-	cluster, err := clustering.NewCluster(memberlistConfig)
+	cluster, err := clustering.NewCluster(config)
 	if err != nil {
 		return err
 	}
@@ -86,7 +81,7 @@ func startCommand(context *cli.Context) error {
 		log.Warning("no peers configured")
 	}
 
-	guard, err := guard.NewGuard(config)
+	guard, err := guard.NewGuard(cluster)
 	if err != nil {
 		return err
 	}

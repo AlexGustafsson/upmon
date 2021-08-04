@@ -52,7 +52,17 @@ func (delegate *memberlistDelegate) NotifyMsg(data []byte) {
 	switch envelope.MessageType {
 	case ConfigUpdate:
 		configUpdate := envelope.Message.(ConfigUpdateMessage)
-		log.Debugf("Received config update message from '%s', version %d", envelope.Sender, configUpdate.Version)
+		log.Debugf("Received config update message from '%s': %v", envelope.Sender, configUpdate)
+		if member, ok := delegate.cluster.Members[envelope.Sender]; ok {
+			if configUpdate.Version > member.ServicesVersion {
+				member.Services = configUpdate.Services
+			}
+		} else {
+			delegate.cluster.Members[envelope.Sender] = &ClusterMember{
+				ServicesVersion: configUpdate.Version,
+				Services:        configUpdate.Services,
+			}
+		}
 	default:
 		log.Errorf("Got unknown message type from node '%s': %d", envelope.Sender, envelope.MessageType)
 	}

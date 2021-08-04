@@ -4,13 +4,21 @@ import (
 	"bytes"
 	"encoding/gob"
 
+	"github.com/AlexGustafsson/upmon/internal/configuration"
 	"github.com/hashicorp/memberlist"
 	log "github.com/sirupsen/logrus"
 )
 
+type ClusterMember struct {
+	ServicesVersion int
+	Services        map[string]configuration.ServiceConfiguration
+}
+
 type Cluster struct {
-	Memberlist *memberlist.Memberlist
 	self       string
+	config     *configuration.Configuration
+	Memberlist *memberlist.Memberlist
+	Members    map[string]*ClusterMember
 }
 
 type MessageType int
@@ -26,22 +34,36 @@ type Envelope struct {
 }
 
 type ConfigUpdateMessage struct {
-	Version int
+	Version  int
+	Services map[string]configuration.ServiceConfiguration
 }
 
-func NewCluster(config *memberlist.Config) (*Cluster, error) {
+func NewCluster(config *configuration.Configuration) (*Cluster, error) {
+	members := make(map[string]*ClusterMember)
+	members[config.Name] = &ClusterMember{
+		ServicesVersion: 0,
+		Services:        config.Services,
+	}
+
 	cluster := &Cluster{
-		self: config.Name,
+		self:    config.Name,
+		config:  config,
+		Members: members,
+	}
+
+	memberlistConfig, err := config.MemberlistConfig()
+	if err != nil {
+		return nil, err
 	}
 
 	delegate := &memberlistDelegate{
 		cluster: cluster,
 	}
-	config.Events = delegate
-	config.Conflict = delegate
-	config.Delegate = delegate
+	memberlistConfig.Events = delegate
+	memberlistConfig.Conflict = delegate
+	memberlistConfig.Delegate = delegate
 
-	memberlist, err := memberlist.Create(config)
+	memberlist, err := memberlist.Create(memberlistConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -59,11 +81,13 @@ func (cluster *Cluster) Join(peers []string) error {
 func (cluster *Cluster) welcome(node *memberlist.Node) {
 	log.WithFields(log.Fields{"name": node.Name}).Info("welcoming node")
 
+	// TODO: Only send public services
 	envelope := &Envelope{
 		Sender:      cluster.self,
 		MessageType: ConfigUpdate,
 		Message: ConfigUpdateMessage{
-			Version: 0,
+			Version:  0,
+			Services: cluster.config.Services,
 		},
 	}
 
@@ -90,4 +114,21 @@ func (cluster *Cluster) Status() ClusterStatus {
 	}
 
 	return ClusterStatusUnhealthy
+}
+
+// Services specifies the combined monitored services of the cluster
+func (cluster *Cluster) Services() map[string]configuration.ServiceConfiguration {
+	services := make(map[string]configuration.ServiceConfiguration)
+
+	for _, member := range cluster.Members {
+		for name, service := range member.Services {
+			if _, ok := services[name]; ok {
+				// TODO: Merge
+			} else {
+				services[name] = service
+			}
+		}
+	}
+
+	return services
 }
