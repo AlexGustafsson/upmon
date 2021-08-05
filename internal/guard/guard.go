@@ -30,7 +30,7 @@ type Guard struct {
 	sync.Mutex
 	monitorsGroup      sync.WaitGroup
 	update             chan *core.ServiceStatus
-	stop               <-chan bool
+	stop               chan bool
 	configuredServices map[string]configuration.ServiceConfiguration
 	configuredMonitors []*Monitor
 	activeMonitors     []*Monitor
@@ -93,6 +93,7 @@ func (guard *Guard) ConfigureServices(services map[string]configuration.ServiceC
 // Start starts the guard
 func (guard *Guard) Start() error {
 	guard.startAllMonitors()
+	guard.stop = make(chan bool)
 
 	// Watch the update channel
 	for {
@@ -108,6 +109,10 @@ func (guard *Guard) Start() error {
 			}
 		}
 	}
+}
+
+func (guard *Guard) Stop() {
+	close(guard.stop)
 }
 
 // startAllMonitors starts all monitors. Calling when running is undefined behavior
