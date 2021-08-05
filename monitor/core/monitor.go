@@ -1,5 +1,7 @@
 package core
 
+import "sync"
+
 type Monitor interface {
 	// Name of the monitor
 	Name() string
@@ -10,7 +12,7 @@ type Monitor interface {
 	// Check the status of a service
 	CheckImmediate() (Status, error)
 	// Watch the status of a service continously
-	Watch(update chan<- *ServiceStatus, stop <-chan bool) error
+	Watch(update chan<- *ServiceStatus, stop <-chan bool, wg sync.WaitGroup) error
 	// Service is the service the monitor monitors
 	Service() Service
 	// Config is the configuration used for the monitor

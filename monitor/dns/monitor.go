@@ -2,9 +2,11 @@ package dns
 
 import (
 	"net"
+	"sync"
 	"time"
 
 	"github.com/AlexGustafsson/upmon/monitor/core"
+	log "github.com/sirupsen/logrus"
 )
 
 type Monitor struct {
@@ -54,11 +56,14 @@ func (monitor *Monitor) CheckImmediate() (core.Status, error) {
 	return core.StatusUp, nil
 }
 
-func (monitor *Monitor) Watch(update chan<- *core.ServiceStatus, stop <-chan bool) error {
+func (monitor *Monitor) Watch(update chan<- *core.ServiceStatus, stop <-chan bool, wg sync.WaitGroup) error {
+	wg.Add(1)
 	go func() {
 		for {
 			select {
 			case <-stop:
+				wg.Done()
+				log.WithFields(log.Fields{"monitor": "dns"}).Debugf("exiting")
 				return
 			default:
 				status, err := monitor.CheckImmediate()

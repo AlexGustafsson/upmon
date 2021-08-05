@@ -81,12 +81,19 @@ func startCommand(context *cli.Context) error {
 		log.Warning("no peers configured")
 	}
 
-	guard, err := guard.NewGuard(cluster)
-	if err != nil {
-		return err
-	}
+	guard := guard.NewGuard()
 
 	wg := &sync.WaitGroup{}
+
+	wg.Add(1)
+	go func() {
+		for update := range cluster.ServicesUpdates {
+			log.Debug("got service update from cluster")
+			guard.ConfigureServices(update)
+			guard.Reload()
+		}
+	}()
+
 	wg.Add(1)
 	go guard.Start()
 

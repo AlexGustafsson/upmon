@@ -1,6 +1,7 @@
 package ping
 
 import (
+	"sync"
 	"time"
 
 	"github.com/AlexGustafsson/upmon/monitor/core"
@@ -72,11 +73,14 @@ func (monitor *Monitor) CheckImmediate() (core.Status, error) {
 	return core.StatusDown, nil
 }
 
-func (monitor *Monitor) Watch(update chan<- *core.ServiceStatus, stop <-chan bool) error {
+func (monitor *Monitor) Watch(update chan<- *core.ServiceStatus, stop <-chan bool, wg sync.WaitGroup) error {
+	wg.Add(1)
 	go func() {
 		for {
 			select {
 			case <-stop:
+				wg.Done()
+				log.WithFields(log.Fields{"monitor": "ping"}).Debugf("exiting")
 				return
 			default:
 				status, err := monitor.CheckImmediate()
