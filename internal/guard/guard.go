@@ -29,16 +29,15 @@ type Service struct {
 type Guard struct {
 	sync.Mutex
 	monitorsGroup      sync.WaitGroup
-	update             chan *core.ServiceStatus
-	stop               chan bool
 	configuredServices map[string]configuration.ServiceConfiguration
 	configuredMonitors []*Monitor
 	activeMonitors     []*Monitor
+	StatusUpdates      chan *core.ServiceStatus
 }
 
 func NewGuard() *Guard {
 	guard := &Guard{
-		update:             make(chan *core.ServiceStatus),
+		StatusUpdates:      make(chan *core.ServiceStatus),
 		configuredServices: make(map[string]configuration.ServiceConfiguration),
 		configuredMonitors: make([]*Monitor, 0),
 		activeMonitors:     make([]*Monitor, 0),
@@ -92,27 +91,13 @@ func (guard *Guard) ConfigureServices(services map[string]configuration.ServiceC
 }
 
 // Start starts the guard
-func (guard *Guard) Start() error {
+func (guard *Guard) Start() {
 	guard.startAllMonitors()
-	guard.stop = make(chan bool)
-
-	// Watch the update channel
-	for {
-		select {
-		case <-guard.stop:
-			return nil
-		case status := <-guard.update:
-			if status.Err == nil {
-				// log.Infof("got update: %s", status.Status.String())
-			} else {
-				log.Warningf("failed to perform '%s' check: %v", status.Monitor.Name(), status.Err)
-			}
-		}
-	}
 }
 
+// Stop stops the guard
 func (guard *Guard) Stop() {
-	close(guard.stop)
+	guard.stopAllMonitors()
 }
 
 // startAllMonitors starts all monitors. Calling when running is undefined behavior
@@ -126,7 +111,7 @@ func (guard *Guard) startAllMonitors() {
 	log.Infof("starting all monitors")
 	for _, monitor := range guard.configuredMonitors {
 		log.Infof("starting monitor '%s' for service '%s'", monitor.name, monitor.service.name)
-		err := monitor.monitor.Watch(guard.update, monitor.stop, guard.monitorsGroup)
+		err := monitor.monitor.Watch(guard.StatusUpdates, monitor.stop, guard.monitorsGroup)
 		if err != nil {
 			log.Warningf("failed to start watching '%s' (%s): %v", monitor.name, monitor.monitor.Name(), err)
 		}

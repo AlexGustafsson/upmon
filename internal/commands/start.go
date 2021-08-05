@@ -85,6 +85,7 @@ func startCommand(context *cli.Context) error {
 
 	wg := &sync.WaitGroup{}
 
+	// Watch for updates from cluster members
 	wg.Add(1)
 	go func() {
 		for update := range cluster.ServicesUpdates {
@@ -94,8 +95,19 @@ func startCommand(context *cli.Context) error {
 		}
 	}()
 
+	// Watch for changes in monitored services
 	wg.Add(1)
-	go guard.Start()
+	go func() {
+		for status := range guard.StatusUpdates {
+			if status.Err == nil {
+				log.Infof("got update: %s", status.Status.String())
+			} else {
+				log.Warningf("failed to perform '%s' check: %v", status.Monitor.Name(), status.Err)
+			}
+		}
+	}()
+
+	guard.Start()
 
 	if config.Api.Enabled {
 		server := server.NewServer(config, cluster)
