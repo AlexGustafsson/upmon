@@ -9,6 +9,8 @@ import (
 
 // MonitorConfiguration configures a monitor for a service
 type MonitorConfiguration struct {
+	// Id is an identifier of the monitor, unique for the service
+	Id string `koanf:"id"`
 	// Type is the type of monitor, such as "ping" or "http"
 	Type string `koanf:"type"`
 	// Name is a name of the monitor
@@ -21,7 +23,7 @@ type MonitorConfiguration struct {
 
 // ServiceConfiguration configures a service to be monitored
 type ServiceConfiguration struct {
-	// Id is the globally unique identifier for the service
+	// Id is an identifier for the service, unique for all services
 	Id string `koanf:"id"`
 	// Name is the name of the service
 	Name string `koanf:"name"`

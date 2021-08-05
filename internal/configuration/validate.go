@@ -14,6 +14,12 @@ func Validate(config *Configuration) []error {
 		if service.Id == "" {
 			errors = append(errors, fmt.Errorf("id of a service cannot be empty"))
 		}
+
+		for _, monitor := range service.Monitors {
+			if monitor.Id == "" {
+				errors = append(errors, fmt.Errorf("id of a monitor cannot be empty"))
+			}
+		}
 	}
 
 	return errors

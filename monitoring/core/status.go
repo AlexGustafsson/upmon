@@ -12,7 +12,7 @@ const (
 )
 
 type ServiceStatus struct {
-	Err     error
-	Status  Status
-	Monitor Monitor
+	Err    error
+	Status Status
+	Check  Check
 }

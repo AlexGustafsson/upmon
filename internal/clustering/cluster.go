@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 
 	"github.com/AlexGustafsson/upmon/internal/configuration"
+	"github.com/AlexGustafsson/upmon/monitoring"
 	"github.com/hashicorp/memberlist"
 	log "github.com/sirupsen/logrus"
 )
@@ -147,4 +148,9 @@ func (cluster *Cluster) Services() []configuration.ServiceConfiguration {
 	}
 
 	return services
+}
+
+func (cluster *Cluster) BroadcastStatusUpdate(serviceId string, monitorId string, status monitoring.Status) error {
+	log.WithFields(log.Fields{"service": serviceId, "monitor": monitorId, "status": status.String()}).Debugf("broadcasting status")
+	return nil
 }
