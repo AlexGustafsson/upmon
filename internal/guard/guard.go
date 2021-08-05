@@ -43,7 +43,7 @@ func (guard *Guard) ConfigureServices(services []configuration.ServiceConfigurat
 	// Create all configured monitors
 	// TODO: Transaction / rollback - either all monitors start or none start (no undefined state)
 	for _, serviceConfig := range guard.configuredServices {
-		service := core.NewService(serviceConfig.Id, serviceConfig.Name, serviceConfig.Description)
+		service := core.NewService(serviceConfig.Id, serviceConfig.Name, serviceConfig.Description, serviceConfig.Origin)
 
 		for _, monitorConfig := range serviceConfig.Monitors {
 			monitor, err := monitor.NewMonitor(monitorConfig.Type, service, monitorConfig.Options)
