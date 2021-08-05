@@ -62,7 +62,7 @@ func (o *Service) GetName() string {
 // GetNameOk returns a tuple with the Name field value
 // and a boolean to check if the value has been set.
 func (o *Service) GetNameOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Name, true
@@ -118,7 +118,7 @@ func (o *Service) GetPrivate() bool {
 // GetPrivateOk returns a tuple with the Private field value
 // and a boolean to check if the value has been set.
 func (o *Service) GetPrivateOk() (*bool, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Private, true
@@ -142,7 +142,7 @@ func (o *Service) GetStatus() string {
 // GetStatusOk returns a tuple with the Status field value
 // and a boolean to check if the value has been set.
 func (o *Service) GetStatusOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Status, true
@@ -166,7 +166,7 @@ func (o *Service) GetLastSeen() string {
 // GetLastSeenOk returns a tuple with the LastSeen field value
 // and a boolean to check if the value has been set.
 func (o *Service) GetLastSeenOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.LastSeen, true
@@ -232,5 +232,3 @@ func (v *NullableService) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

@@ -28,10 +28,9 @@ var (
 type PeersApiService service
 
 type ApiPeersGetRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *PeersApiService
 }
-
 
 func (r ApiPeersGetRequest) Execute() (Peers, *_nethttp.Response, error) {
 	return r.ApiService.PeersGetExecute(r)
@@ -45,7 +44,7 @@ func (r ApiPeersGetRequest) Execute() (Peers, *_nethttp.Response, error) {
 func (a *PeersApiService) PeersGet(ctx _context.Context) ApiPeersGetRequest {
 	return ApiPeersGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -129,11 +128,10 @@ func (a *PeersApiService) PeersGetExecute(r ApiPeersGetRequest) (Peers, *_nethtt
 }
 
 type ApiPeersPeerIdGetRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *PeersApiService
-	peerId string
+	peerId     string
 }
-
 
 func (r ApiPeersPeerIdGetRequest) Execute() (Peer, *_nethttp.Response, error) {
 	return r.ApiService.PeersPeerIdGetExecute(r)
@@ -148,8 +146,8 @@ func (r ApiPeersPeerIdGetRequest) Execute() (Peer, *_nethttp.Response, error) {
 func (a *PeersApiService) PeersPeerIdGet(ctx _context.Context, peerId string) ApiPeersPeerIdGetRequest {
 	return ApiPeersPeerIdGetRequest{
 		ApiService: a,
-		ctx: ctx,
-		peerId: peerId,
+		ctx:        ctx,
+		peerId:     peerId,
 	}
 }
 
