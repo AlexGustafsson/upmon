@@ -37,6 +37,7 @@ func Load(filePath string) (*Configuration, error) {
 
 	// Set default names if none exist
 	for _, service := range config.Services {
+		service.Origin = config.Name
 		for _, monitor := range service.Monitors {
 			if monitor.Name == "" {
 				monitor.Name = fmt.Sprintf("unnamed '%s' monitor", monitor.Type)

@@ -10,6 +10,7 @@ import (
 )
 
 type Monitor struct {
+	core.DefaultMonitor
 	config  *MonitorConfiguration
 	service core.Service
 }
@@ -27,11 +28,11 @@ func NewMonitor(service core.Service, options map[string]interface{}) (*Monitor,
 	}, nil
 }
 
-func (monitor *Monitor) Name() string {
+func (monitor *Monitor) Type() string {
 	return "dns"
 }
 
-func (monitor *Monitor) Description() string {
+func (monitor *Monitor) TypeDescription() string {
 	return "DNS resolver"
 }
 

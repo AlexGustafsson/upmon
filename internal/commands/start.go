@@ -89,7 +89,7 @@ func startCommand(context *cli.Context) error {
 	wg.Add(1)
 	go func() {
 		for services := range cluster.ServicesUpdates {
-			log.Debug("got service update from cluster")
+			log.Debug("got services update from cluster")
 			guard.ConfigureServices(services)
 			guard.Reload()
 		}
@@ -100,14 +100,15 @@ func startCommand(context *cli.Context) error {
 	go func() {
 		for status := range guard.StatusUpdates {
 			if status.Err == nil {
-				log.Infof("got update: %s", status.Status.String())
+				log.Infof("got update for service '%s' from node '%s': %s", status.Monitor.Service().Name(), config.Name, status.Status)
 			} else {
-				log.Warningf("failed to perform '%s' check: %v", status.Monitor.Name(), status.Err)
+				log.Warningf("failed to check service '%s' using '%s' (%s): %v", status.Monitor.Service().Name(), status.Monitor.Type(), status.Err)
 			}
 		}
 	}()
 
-	guard.Start()
+	wg.Add(1)
+	go guard.Start()
 
 	if config.Api.Enabled {
 		server := server.NewServer(config, cluster)

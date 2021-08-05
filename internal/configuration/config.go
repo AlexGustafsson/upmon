@@ -31,6 +31,8 @@ type ServiceConfiguration struct {
 	Monitors []MonitorConfiguration `koanf:"monitors"`
 	// Private indicates whether or not the service configuration is shared with the cluster
 	Private bool `koan:"private"`
+	// Origin is the node from which this service is configured
+	Origin string
 }
 
 // Configuration of the service

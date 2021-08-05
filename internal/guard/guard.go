@@ -10,29 +10,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Monitor is a monitor of a service
-type Monitor struct {
-	name        string
-	description string
-	monitor     core.Monitor
-	service     *Service
-	stop        chan bool
-}
-
-// Service is a monitored service
-type Service struct {
-	id          string
-	name        string
-	description string
-}
-
 // Guard is a monitoring manager
 type Guard struct {
 	sync.Mutex
+	monitorsStop       chan bool
 	monitorsGroup      sync.WaitGroup
 	configuredServices []configuration.ServiceConfiguration
-	configuredMonitors []*Monitor
-	activeMonitors     []*Monitor
+	configuredMonitors []core.Monitor
+	activeMonitors     []core.Monitor
 	StatusUpdates      chan *core.ServiceStatus
 }
 
@@ -40,8 +25,8 @@ func NewGuard() *Guard {
 	guard := &Guard{
 		StatusUpdates:      make(chan *core.ServiceStatus),
 		configuredServices: make([]configuration.ServiceConfiguration, 0),
-		configuredMonitors: make([]*Monitor, 0),
-		activeMonitors:     make([]*Monitor, 0),
+		configuredMonitors: make([]core.Monitor, 0),
+		activeMonitors:     make([]core.Monitor, 0),
 	}
 
 	return guard
@@ -58,11 +43,7 @@ func (guard *Guard) ConfigureServices(services []configuration.ServiceConfigurat
 	// Create all configured monitors
 	// TODO: Transaction / rollback - either all monitors start or none start (no undefined state)
 	for _, serviceConfig := range guard.configuredServices {
-		service := &Service{
-			id:          serviceConfig.Id,
-			name:        serviceConfig.Name,
-			description: serviceConfig.Description,
-		}
+		service := core.NewService(serviceConfig.Id, serviceConfig.Name, serviceConfig.Description)
 
 		for _, monitorConfig := range serviceConfig.Monitors {
 			monitor, err := monitor.NewMonitor(monitorConfig.Type, service, monitorConfig.Options)
@@ -79,13 +60,7 @@ func (guard *Guard) ConfigureServices(services []configuration.ServiceConfigurat
 				return fmt.Errorf("monitor config validation failed for service '%s', monitor '%s' (%s)", serviceConfig.Name, monitorConfig.Name, monitorConfig.Type)
 			}
 
-			guard.configuredMonitors = append(guard.configuredMonitors, &Monitor{
-				name:        monitorConfig.Name,
-				description: monitorConfig.Description,
-				service:     service,
-				monitor:     monitor,
-				stop:        make(chan bool),
-			})
+			guard.configuredMonitors = append(guard.configuredMonitors, monitor)
 		}
 	}
 
@@ -109,13 +84,14 @@ func (guard *Guard) startAllMonitors() {
 
 	// TODO: Rollback if all monitors can't start? Make atomic?
 	guard.activeMonitors = guard.activeMonitors[:0]
+	guard.monitorsStop = make(chan bool)
 
 	log.Infof("starting all monitors")
 	for _, monitor := range guard.configuredMonitors {
-		log.Infof("starting monitor '%s' for service '%s'", monitor.name, monitor.service.name)
-		err := monitor.monitor.Watch(guard.StatusUpdates, monitor.stop, guard.monitorsGroup)
+		log.Infof("starting monitor '%s' for service '%s'", monitor.Name(), monitor.Service().Name())
+		err := monitor.Watch(guard.StatusUpdates, guard.monitorsStop, guard.monitorsGroup)
 		if err != nil {
-			log.Warningf("failed to start watching '%s' (%s): %v", monitor.name, monitor.monitor.Name(), err)
+			log.Warningf("failed to start watching '%s' (%s): %v", monitor.Name(), monitor.Type(), err)
 		}
 		guard.activeMonitors = append(guard.activeMonitors, monitor)
 	}
@@ -124,14 +100,15 @@ func (guard *Guard) startAllMonitors() {
 
 // stopAllMonitors stops all monitors and waits for them to close
 func (guard *Guard) stopAllMonitors() {
+	if guard.monitorsStop == nil {
+		return
+	}
+
 	guard.Lock()
 	defer guard.Unlock()
 
 	log.Infof("stopping all monitors")
-	for _, monitor := range guard.activeMonitors {
-		log.Infof("stopping monitor '%s'", monitor.name)
-		close(monitor.stop)
-	}
+	close(guard.monitorsStop)
 	log.Infof("waiting for all monitors to stop")
 	guard.monitorsGroup.Wait()
 	guard.activeMonitors = guard.activeMonitors[:0]
