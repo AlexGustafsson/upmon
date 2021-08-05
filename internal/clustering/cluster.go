@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 
+	"github.com/AlexGustafsson/upmon/internal/broadcasting"
 	"github.com/AlexGustafsson/upmon/internal/configuration"
 	"github.com/hashicorp/memberlist"
 	log "github.com/sirupsen/logrus"
@@ -15,10 +16,11 @@ type ClusterMember struct {
 }
 
 type Cluster struct {
-	self       string
-	config     *configuration.Configuration
-	Memberlist *memberlist.Memberlist
-	Members    map[string]*ClusterMember
+	self          string
+	config        *configuration.Configuration
+	Memberlist    *memberlist.Memberlist
+	Members       map[string]*ClusterMember
+	ConfigUpdates *broadcasting.SignalChannel
 }
 
 type MessageType int
@@ -46,9 +48,10 @@ func NewCluster(config *configuration.Configuration) (*Cluster, error) {
 	}
 
 	cluster := &Cluster{
-		self:    config.Name,
-		config:  config,
-		Members: members,
+		self:          config.Name,
+		config:        config,
+		Members:       members,
+		ConfigUpdates: broadcasting.NewSignalChannel(),
 	}
 
 	memberlistConfig, err := config.MemberlistConfig()
@@ -114,6 +117,23 @@ func (cluster *Cluster) Status() ClusterStatus {
 	}
 
 	return ClusterStatusUnhealthy
+}
+
+func (cluster *Cluster) updateConfig(envelope *Envelope) {
+	configUpdate := envelope.Message.(ConfigUpdateMessage)
+	log.Debugf("Received config update message from '%s', version %d", envelope.Sender, configUpdate.Version)
+	if member, ok := cluster.Members[envelope.Sender]; ok {
+		if configUpdate.Version > member.ServicesVersion {
+			member.Services = configUpdate.Services
+			cluster.ConfigUpdates.Publish()
+		}
+	} else {
+		cluster.Members[envelope.Sender] = &ClusterMember{
+			ServicesVersion: configUpdate.Version,
+			Services:        configUpdate.Services,
+		}
+		cluster.ConfigUpdates.Publish()
+	}
 }
 
 // Services specifies the combined monitored services of the cluster

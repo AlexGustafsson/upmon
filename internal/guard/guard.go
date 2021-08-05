@@ -2,7 +2,7 @@ package guard
 
 import (
 	"fmt"
-	"time"
+	"sync"
 
 	"github.com/AlexGustafsson/upmon/internal/clustering"
 	"github.com/AlexGustafsson/upmon/monitor"
@@ -27,6 +27,7 @@ type Service struct {
 
 // Guard is a monitoring manager
 type Guard struct {
+	sync.Mutex
 	cluster  *clustering.Cluster
 	monitors []*Monitor
 	update   chan *core.ServiceStatus
@@ -49,6 +50,9 @@ func NewGuard(cluster *clustering.Cluster) (*Guard, error) {
 }
 
 func (guard *Guard) setupMonitors() error {
+	guard.Lock()
+	defer guard.Unlock()
+
 	// Create all configured monitors
 	for serviceName, serviceConfig := range guard.cluster.Services() {
 		service := &Service{
@@ -87,18 +91,9 @@ func (guard *Guard) setupMonitors() error {
 func (guard *Guard) Start() error {
 	guard.startAllMonitors()
 
-	// TODO: Replace with an actual event bus for the cluster updates
-	go func() {
-		for range time.Tick(time.Second * 10) {
-			log.Info("reloading config")
-			err := guard.Reload()
-			if err == nil {
-				log.Info("reloaded successfully")
-			} else {
-				log.Errorf("unable to reload guard: %v", err)
-			}
-		}
-	}()
+	guard.cluster.ConfigUpdates.SubscribeCallback(func() {
+		guard.Reload()
+	})
 
 	// Watch the update channel
 	for {
@@ -116,6 +111,9 @@ func (guard *Guard) Start() error {
 }
 
 func (guard *Guard) startAllMonitors() {
+	guard.Lock()
+	defer guard.Unlock()
+
 	// Start all monitors
 	for _, monitor := range guard.monitors {
 		log.Infof("starting monitor '%s'", monitor.name)
@@ -127,6 +125,9 @@ func (guard *Guard) startAllMonitors() {
 }
 
 func (guard *Guard) stopAllMonitors() {
+	guard.Lock()
+	defer guard.Unlock()
+
 	for _, monitor := range guard.monitors {
 		log.Infof("stopping monitor 's'", monitor.name)
 		close(monitor.stop)
