@@ -3,6 +3,7 @@ package clustering
 import (
 	"bytes"
 	"encoding/gob"
+	"io/ioutil"
 
 	"github.com/AlexGustafsson/upmon/internal/configuration"
 	"github.com/hashicorp/memberlist"
@@ -64,6 +65,8 @@ func NewCluster(config *configuration.Configuration) (*Cluster, error) {
 	memberlistConfig.Events = delegate
 	memberlistConfig.Conflict = delegate
 	memberlistConfig.Delegate = delegate
+	// Disable memberlist logging
+	memberlistConfig.LogOutput = ioutil.Discard
 
 	memberlist, err := memberlist.Create(memberlistConfig)
 	if err != nil {
