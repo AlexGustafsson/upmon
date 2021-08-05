@@ -66,7 +66,7 @@ func (guard *Guard) ConfigureServices(services map[string]configuration.ServiceC
 		for _, monitorConfig := range serviceConfig.Monitors {
 			monitor, err := monitor.NewMonitor(monitorConfig.Type, service, monitorConfig.Options)
 			if err != nil {
-				log.Warningf("failed to create monitor '%s' (%s): %v", monitorConfig.Name, monitorConfig.Type, err)
+				log.Warningf("failed to create monitor '%s' (%s) for service '%s': %v", monitorConfig.Name, monitorConfig.Type, serviceName, err)
 				continue
 			}
 
@@ -81,6 +81,7 @@ func (guard *Guard) ConfigureServices(services map[string]configuration.ServiceC
 			guard.configuredMonitors = append(guard.configuredMonitors, &Monitor{
 				name:        monitorConfig.Name,
 				description: monitorConfig.Description,
+				service:     service,
 				monitor:     monitor,
 				stop:        make(chan bool),
 			})
@@ -102,8 +103,7 @@ func (guard *Guard) Start() error {
 			return nil
 		case status := <-guard.update:
 			if status.Err == nil {
-				log.Infof("got update: %s", status.Status.String())
-
+				// log.Infof("got update: %s", status.Status.String())
 			} else {
 				log.Warningf("failed to perform '%s' check: %v", status.Monitor.Name(), status.Err)
 			}
@@ -125,7 +125,7 @@ func (guard *Guard) startAllMonitors() {
 
 	log.Infof("starting all monitors")
 	for _, monitor := range guard.configuredMonitors {
-		log.Infof("starting monitor '%s'", monitor.name)
+		log.Infof("starting monitor '%s' for service '%s'", monitor.name, monitor.service.name)
 		err := monitor.monitor.Watch(guard.update, monitor.stop, guard.monitorsGroup)
 		if err != nil {
 			log.Warningf("failed to start watching '%s' (%s): %v", monitor.name, monitor.monitor.Name(), err)

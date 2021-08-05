@@ -90,6 +90,6 @@ func (server *Server) Start(bind string) error {
 		return c.Status(404).Send(json)
 	})
 
-	log.Infof("starting server on %s", bind)
+	log.Infof("starting API server on %s", bind)
 	return app.Listen(bind)
 }
