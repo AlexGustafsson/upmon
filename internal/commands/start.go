@@ -88,9 +88,9 @@ func startCommand(context *cli.Context) error {
 	// Watch for updates from cluster members
 	wg.Add(1)
 	go func() {
-		for update := range cluster.ServicesUpdates {
+		for services := range cluster.ServicesUpdates {
 			log.Debug("got service update from cluster")
-			guard.ConfigureServices(update)
+			guard.ConfigureServices(services)
 			guard.Reload()
 		}
 	}()

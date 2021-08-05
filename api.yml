@@ -120,7 +120,11 @@ components:
         - private
         - status
         - lastSeen
+        - origin
       properties:
+        id:
+          type: string
+          description: A globally unique identifier for the service
         name:
           type: string
           description: Name of the service
@@ -136,6 +140,9 @@ components:
         lastSeen:
           type: string
           description: The timestamp at which the service was last seen responding
+        origin:
+          type: string
+          description: The origin node from which this service is configured
     ServiceStatus:
       type: object
       required:

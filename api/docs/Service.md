@@ -4,17 +4,19 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**Id** | Pointer to **string** | A globally unique identifier for the service | [optional] 
 **Name** | **string** | Name of the service | 
 **Description** | Pointer to **string** | Description of the service | [optional] 
 **Private** | **bool** | Whether or not the config is shared with the cluster | 
 **Status** | **string** | The current status of the service | 
 **LastSeen** | **string** | The timestamp at which the service was last seen responding | 
+**Origin** | **string** | The origin node from which this service is configured | 
 
 ## Methods
 
 ### NewService
 
-`func NewService(name string, private bool, status string, lastSeen string, ) *Service`
+`func NewService(name string, private bool, status string, lastSeen string, origin string, ) *Service`
 
 NewService instantiates a new Service object
 This constructor will assign default values to properties that have it defined,
@@ -28,6 +30,31 @@ will change when the set of required properties is changed
 NewServiceWithDefaults instantiates a new Service object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
+
+### GetId
+
+`func (o *Service) GetId() string`
+
+GetId returns the Id field if non-nil, zero value otherwise.
+
+### GetIdOk
+
+`func (o *Service) GetIdOk() (*string, bool)`
+
+GetIdOk returns a tuple with the Id field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetId
+
+`func (o *Service) SetId(v string)`
+
+SetId sets Id field to given value.
+
+### HasId
+
+`func (o *Service) HasId() bool`
+
+HasId returns a boolean if a field has been set.
 
 ### GetName
 
@@ -132,6 +159,26 @@ and a boolean to check if the value has been set.
 `func (o *Service) SetLastSeen(v string)`
 
 SetLastSeen sets LastSeen field to given value.
+
+
+### GetOrigin
+
+`func (o *Service) GetOrigin() string`
+
+GetOrigin returns the Origin field if non-nil, zero value otherwise.
+
+### GetOriginOk
+
+`func (o *Service) GetOriginOk() (*string, bool)`
+
+GetOriginOk returns a tuple with the Origin field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetOrigin
+
+`func (o *Service) SetOrigin(v string)`
+
+SetOrigin sets Origin field to given value.
 
 
 

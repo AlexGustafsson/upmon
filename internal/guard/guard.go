@@ -21,6 +21,7 @@ type Monitor struct {
 
 // Service is a monitored service
 type Service struct {
+	id          string
 	name        string
 	description string
 }
@@ -29,7 +30,7 @@ type Service struct {
 type Guard struct {
 	sync.Mutex
 	monitorsGroup      sync.WaitGroup
-	configuredServices map[string]configuration.ServiceConfiguration
+	configuredServices []configuration.ServiceConfiguration
 	configuredMonitors []*Monitor
 	activeMonitors     []*Monitor
 	StatusUpdates      chan *core.ServiceStatus
@@ -38,7 +39,7 @@ type Guard struct {
 func NewGuard() *Guard {
 	guard := &Guard{
 		StatusUpdates:      make(chan *core.ServiceStatus),
-		configuredServices: make(map[string]configuration.ServiceConfiguration),
+		configuredServices: make([]configuration.ServiceConfiguration, 0),
 		configuredMonitors: make([]*Monitor, 0),
 		activeMonitors:     make([]*Monitor, 0),
 	}
@@ -47,7 +48,7 @@ func NewGuard() *Guard {
 }
 
 // ConfigureServices sets up the configured monitors. Use Reload to apply the configuration
-func (guard *Guard) ConfigureServices(services map[string]configuration.ServiceConfiguration) error {
+func (guard *Guard) ConfigureServices(services []configuration.ServiceConfiguration) error {
 	guard.Lock()
 	defer guard.Unlock()
 
@@ -56,16 +57,17 @@ func (guard *Guard) ConfigureServices(services map[string]configuration.ServiceC
 
 	// Create all configured monitors
 	// TODO: Transaction / rollback - either all monitors start or none start (no undefined state)
-	for serviceName, serviceConfig := range guard.configuredServices {
+	for _, serviceConfig := range guard.configuredServices {
 		service := &Service{
-			name:        serviceName,
+			id:          serviceConfig.Id,
+			name:        serviceConfig.Name,
 			description: serviceConfig.Description,
 		}
 
 		for _, monitorConfig := range serviceConfig.Monitors {
 			monitor, err := monitor.NewMonitor(monitorConfig.Type, service, monitorConfig.Options)
 			if err != nil {
-				log.Warningf("failed to create monitor '%s' (%s) for service '%s': %v", monitorConfig.Name, monitorConfig.Type, serviceName, err)
+				log.Warningf("failed to create monitor '%s' (%s) for service '%s': %v", monitorConfig.Name, monitorConfig.Type, serviceConfig.Name, err)
 				continue
 			}
 
@@ -74,7 +76,7 @@ func (guard *Guard) ConfigureServices(services map[string]configuration.ServiceC
 				for _, err := range errs {
 					log.Error(err)
 				}
-				return fmt.Errorf("monitor config validation failed for service '%s', monitor '%s' (%s)", serviceName, monitorConfig.Name, monitorConfig.Type)
+				return fmt.Errorf("monitor config validation failed for service '%s', monitor '%s' (%s)", serviceConfig.Name, monitorConfig.Name, monitorConfig.Type)
 			}
 
 			guard.configuredMonitors = append(guard.configuredMonitors, &Monitor{

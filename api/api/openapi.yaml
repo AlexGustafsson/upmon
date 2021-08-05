@@ -137,13 +137,17 @@ components:
         services:
         - private: ""
           lastSeen: lastSeen
+          origin: origin
           name: name
           description: description
+          id: id
           status: status
         - private: ""
           lastSeen: lastSeen
+          origin: origin
           name: name
           description: description
+          id: id
           status: status
       properties:
         services:
@@ -157,10 +161,15 @@ components:
       example:
         private: ""
         lastSeen: lastSeen
+        origin: origin
         name: name
         description: description
+        id: id
         status: status
       properties:
+        id:
+          description: A globally unique identifier for the service
+          type: string
         name:
           description: Name of the service
           type: string
@@ -176,9 +185,13 @@ components:
         lastSeen:
           description: The timestamp at which the service was last seen responding
           type: string
+        origin:
+          description: The origin node from which this service is configured
+          type: string
       required:
       - lastSeen
       - name
+      - origin
       - private
       - status
       - status

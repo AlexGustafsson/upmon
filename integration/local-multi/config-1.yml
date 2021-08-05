@@ -7,7 +7,7 @@ api:
   enabled: true
   bind: "127.0.0.1:8080"
 services:
-  google:
+  - id: google
     name: "Google"
     description: "Google monitoring"
     private: false

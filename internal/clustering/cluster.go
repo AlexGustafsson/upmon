@@ -12,7 +12,7 @@ import (
 
 type ClusterMember struct {
 	ServicesVersion int
-	Services        map[string]configuration.ServiceConfiguration
+	Services        []configuration.ServiceConfiguration
 }
 
 type Cluster struct {
@@ -20,7 +20,7 @@ type Cluster struct {
 	config          *configuration.Configuration
 	Memberlist      *memberlist.Memberlist
 	Members         map[string]*ClusterMember
-	ServicesUpdates chan map[string]configuration.ServiceConfiguration
+	ServicesUpdates chan []configuration.ServiceConfiguration
 }
 
 type MessageType int
@@ -37,7 +37,7 @@ type Envelope struct {
 
 type ConfigUpdateMessage struct {
 	Version  int
-	Services map[string]configuration.ServiceConfiguration
+	Services []configuration.ServiceConfiguration
 }
 
 func NewCluster(config *configuration.Configuration) (*Cluster, error) {
@@ -51,7 +51,7 @@ func NewCluster(config *configuration.Configuration) (*Cluster, error) {
 		self:            config.Name,
 		config:          config,
 		Members:         members,
-		ServicesUpdates: make(chan map[string]configuration.ServiceConfiguration),
+		ServicesUpdates: make(chan []configuration.ServiceConfiguration),
 	}
 
 	memberlistConfig, err := config.MemberlistConfig()
@@ -139,17 +139,11 @@ func (cluster *Cluster) updateConfig(envelope *Envelope) {
 }
 
 // Services specifies the combined monitored services of the cluster
-func (cluster *Cluster) Services() map[string]configuration.ServiceConfiguration {
-	services := make(map[string]configuration.ServiceConfiguration)
+func (cluster *Cluster) Services() []configuration.ServiceConfiguration {
+	services := make([]configuration.ServiceConfiguration, 0)
 
 	for _, member := range cluster.Members {
-		for name, service := range member.Services {
-			if _, ok := services[name]; ok {
-				// TODO: Merge
-			} else {
-				services[name] = service
-			}
-		}
+		services = append(services, member.Services...)
 	}
 
 	return services

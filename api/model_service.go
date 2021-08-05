@@ -16,6 +16,8 @@ import (
 
 // Service struct for Service
 type Service struct {
+	// A globally unique identifier for the service
+	Id *string `json:"id,omitempty"`
 	// Name of the service
 	Name string `json:"name"`
 	// Description of the service
@@ -26,18 +28,21 @@ type Service struct {
 	Status string `json:"status"`
 	// The timestamp at which the service was last seen responding
 	LastSeen string `json:"lastSeen"`
+	// The origin node from which this service is configured
+	Origin string `json:"origin"`
 }
 
 // NewService instantiates a new Service object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewService(name string, private bool, status string, lastSeen string) *Service {
+func NewService(name string, private bool, status string, lastSeen string, origin string) *Service {
 	this := Service{}
 	this.Name = name
 	this.Private = private
 	this.Status = status
 	this.LastSeen = lastSeen
+	this.Origin = origin
 	return &this
 }
 
@@ -47,6 +52,38 @@ func NewService(name string, private bool, status string, lastSeen string) *Serv
 func NewServiceWithDefaults() *Service {
 	this := Service{}
 	return &this
+}
+
+// GetId returns the Id field value if set, zero value otherwise.
+func (o *Service) GetId() string {
+	if o == nil || o.Id == nil {
+		var ret string
+		return ret
+	}
+	return *o.Id
+}
+
+// GetIdOk returns a tuple with the Id field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Service) GetIdOk() (*string, bool) {
+	if o == nil || o.Id == nil {
+		return nil, false
+	}
+	return o.Id, true
+}
+
+// HasId returns a boolean if a field has been set.
+func (o *Service) HasId() bool {
+	if o != nil && o.Id != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetId gets a reference to the given string and assigns it to the Id field.
+func (o *Service) SetId(v string) {
+	o.Id = &v
 }
 
 // GetName returns the Name field value
@@ -177,8 +214,35 @@ func (o *Service) SetLastSeen(v string) {
 	o.LastSeen = v
 }
 
+// GetOrigin returns the Origin field value
+func (o *Service) GetOrigin() string {
+	if o == nil {
+		var ret string
+		return ret
+	}
+
+	return o.Origin
+}
+
+// GetOriginOk returns a tuple with the Origin field value
+// and a boolean to check if the value has been set.
+func (o *Service) GetOriginOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.Origin, true
+}
+
+// SetOrigin sets field value
+func (o *Service) SetOrigin(v string) {
+	o.Origin = v
+}
+
 func (o Service) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
+	if o.Id != nil {
+		toSerialize["id"] = o.Id
+	}
 	if true {
 		toSerialize["name"] = o.Name
 	}
@@ -193,6 +257,9 @@ func (o Service) MarshalJSON() ([]byte, error) {
 	}
 	if true {
 		toSerialize["lastSeen"] = o.LastSeen
+	}
+	if true {
+		toSerialize["origin"] = o.Origin
 	}
 	return json.Marshal(toSerialize)
 }

@@ -21,6 +21,10 @@ type MonitorConfiguration struct {
 
 // ServiceConfiguration configures a service to be monitored
 type ServiceConfiguration struct {
+	// Id is the globally unique identifier for the service
+	Id string `koanf:"id"`
+	// Name is the name of the service
+	Name string `koanf:"name"`
 	// Description is a description of the service
 	Description string `koanf:"description"`
 	// Monitors is a list of monitors to use to monitor the service
@@ -31,14 +35,14 @@ type ServiceConfiguration struct {
 
 // Configuration of the service
 type Configuration struct {
-	// Name is the name of the node
+	// Name is the unique name of the node
 	Name string `koanf:"name"`
 	// Bind is the address and port used for cluster communication
 	Bind string `koanf:"bind"`
 	// Peers is a list of peers' bind addresses and ports
 	Peers []string `koanf:"peers"`
 	// Services contains all the configured services, mapped by their name
-	Services map[string]ServiceConfiguration `koanf:"services"`
+	Services []ServiceConfiguration `koanf:"services"`
 	// Api contains configuration for the REST API
 	Api struct {
 		// Enabled controls whether or not the REST API is enabled
