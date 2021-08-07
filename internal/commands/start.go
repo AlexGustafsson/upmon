@@ -13,6 +13,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+// customFormatter is a log formatter that always add the node's name as a field
 type customFormatter struct {
 	nodeName  string
 	formatter log.Formatter
@@ -48,6 +49,7 @@ func startCommand(context *cli.Context) error {
 		},
 	})
 
+	// Must be called before using the clustering package
 	clustering.RegisterGobNames()
 	cluster, err := clustering.NewCluster(config)
 	if err != nil {
@@ -56,6 +58,7 @@ func startCommand(context *cli.Context) error {
 
 	log.WithFields(log.Fields{"bind": config.Bind}).Info("listening")
 
+	// Try to configure clustering 5 times before failing
 	if len(config.Peers) > 0 {
 		var delay time.Duration = time.Second
 		var connectionError error

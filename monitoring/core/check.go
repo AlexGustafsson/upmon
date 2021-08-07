@@ -2,6 +2,7 @@ package core
 
 import "sync"
 
+// Check is a monitoring unit that checks a service
 type Check interface {
 	// Name of the check
 	Name() string

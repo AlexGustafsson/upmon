@@ -13,21 +13,31 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// ClusterMember is a member of a cluster
 type ClusterMember struct {
+	// ServicesVersion is the current (incremental) version of the configured services
 	ServicesVersion int
-	Services        []*configuration.ServiceConfiguration
+	// Services are the services configured for the cluster member
+	Services []*configuration.ServiceConfiguration
 }
 
+// Cluster is a cluster of monitoring nodes
 type Cluster struct {
-	self            string
-	config          *configuration.Configuration
-	broadcastQueue  memberlist.TransmitLimitedQueue
-	Memberlist      *memberlist.Memberlist
-	Members         map[string]*ClusterMember
+	// self is the name / id of the current node
+	self   string
+	config *configuration.Configuration
+	// broadcastQueue is the queue used for broadcasting messages across the cluster
+	broadcastQueue memberlist.TransmitLimitedQueue
+	Memberlist     *memberlist.Memberlist
+	// Members are all welcomed members of the cluster from this node's point of view
+	Members map[string]*ClusterMember
+	// ServiceUpdates published the configuration any time it's updated
 	ServicesUpdates chan []*configuration.ServiceConfiguration
-	Store           *storage.Store
+	// Store is a state store for the cluster
+	Store *storage.Store
 }
 
+// NewCluster creates a new cluster based on the given configuration
 func NewCluster(config *configuration.Configuration) (*Cluster, error) {
 	members := make(map[string]*ClusterMember)
 	members[config.Name] = &ClusterMember{
@@ -70,11 +80,13 @@ func NewCluster(config *configuration.Configuration) (*Cluster, error) {
 	return cluster, nil
 }
 
+// Join joins one or more peers using the given addresses
 func (cluster *Cluster) Join(peers []string) error {
 	_, err := cluster.Memberlist.Join(peers)
 	return err
 }
 
+// welcome welcomes another node by publishing the current node's configuration
 func (cluster *Cluster) welcome(node *memberlist.Node) {
 	log.WithFields(log.Fields{"name": node.Name}).Info("welcoming node")
 
@@ -113,6 +125,7 @@ func (cluster *Cluster) Status() ClusterStatus {
 	return ClusterStatusUnhealthy
 }
 
+// updateConfig handles incoming configuration updates from the cluster
 func (cluster *Cluster) updateConfig(configUpdate *ConfigUpdateMessage) {
 	log.Debugf("Received config update message from '%s', version %d", configUpdate.Node, configUpdate.Version)
 	if member, ok := cluster.Members[configUpdate.Node]; ok {
@@ -140,6 +153,7 @@ func (cluster *Cluster) Services() []*configuration.ServiceConfiguration {
 	return services
 }
 
+// BroadcastStatusUpdate broadcasts an update for a specified monitor over an eventual consistent channel
 func (cluster *Cluster) BroadcastStatusUpdate(origin string, serviceId string, monitorId string, status monitoring.Status) error {
 	log.WithFields(log.Fields{"service": serviceId, "monitor": monitorId, "status": status.String()}).Debugf("broadcasting status")
 	envelope := &Envelope{
@@ -171,6 +185,7 @@ func (cluster *Cluster) BroadcastStatusUpdate(origin string, serviceId string, m
 	return nil
 }
 
+// updateStatus handles incoming status updates broadcasted on the cluster
 func (cluster *Cluster) updateStatus(statusUpdate *StatusUpdateMessage) {
 	log.Debugf("Received status update message from '%s' for node '%s', service %s, monitor %s: %s", statusUpdate.Node, statusUpdate.Origin, statusUpdate.ServiceId, statusUpdate.MonitorId, statusUpdate.Status.String())
 	cluster.Store.AssertOrigin(statusUpdate.Origin).AssertService(statusUpdate.ServiceId).AssertMonitor(statusUpdate.MonitorId).SetStatusForNode(statusUpdate.Node, statusUpdate.Status)

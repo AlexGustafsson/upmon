@@ -11,11 +11,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Server is an API server
 type Server struct {
 	config  *configuration.Configuration
 	cluster *clustering.Cluster
 }
 
+// NewServer creates a new server
 func NewServer(config *configuration.Configuration, cluster *clustering.Cluster) *Server {
 	return &Server{
 		config:  config,
@@ -23,6 +25,7 @@ func NewServer(config *configuration.Configuration, cluster *clustering.Cluster)
 	}
 }
 
+// Start starts the server on the given address and port
 func (server *Server) Start(bind string) error {
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,

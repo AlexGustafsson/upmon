@@ -6,7 +6,10 @@ import (
 	"github.com/AlexGustafsson/upmon/monitoring/core"
 )
 
+// Monitor is a service monitor
 type Monitor struct {
+	stop chan bool
+	wg   sync.WaitGroup
 	// Id is an identifier of the monitor, unique for the service
 	Id string
 	// Name of the monitor
@@ -17,8 +20,6 @@ type Monitor struct {
 	Check core.Check
 	// Service is the service the check is performed on
 	Service *Service
-	stop    chan bool
-	wg      sync.WaitGroup
 }
 
 type Status core.Status
@@ -35,12 +36,14 @@ func (status Status) String() string {
 	return core.Status(status).String()
 }
 
+// MonitorStatus is a status update from a monitor
 type MonitorStatus struct {
 	Err     error
 	Status  Status
 	Monitor *Monitor
 }
 
+// Watch watches a monitor for changes which are published on the given channel
 func (monitor *Monitor) Watch(updates chan *MonitorStatus) error {
 	upstreamUpdates := make(chan *core.ServiceStatus)
 	stop := make(chan bool)

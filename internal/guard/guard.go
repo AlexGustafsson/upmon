@@ -15,9 +15,11 @@ type Guard struct {
 	configuredServices []*configuration.ServiceConfiguration
 	configuredMonitors []*monitoring.Monitor
 	activeMonitors     []*monitoring.Monitor
-	StatusUpdates      chan *monitoring.MonitorStatus
+	// StatusUpdates receives monitoring updates
+	StatusUpdates chan *monitoring.MonitorStatus
 }
 
+// NewGuard creates a new guard
 func NewGuard() *Guard {
 	guard := &Guard{
 		StatusUpdates:      make(chan *monitoring.MonitorStatus),
@@ -121,6 +123,7 @@ func (guard *Guard) stopAllMonitors() {
 	log.Infof("all monitors stopped successfully")
 }
 
+// Reload reloads the guard
 func (guard *Guard) Reload() error {
 	guard.stopAllMonitors()
 

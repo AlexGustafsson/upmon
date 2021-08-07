@@ -1,5 +1,6 @@
 package monitoring
 
+// Service is a monitored service
 type Service struct {
 	// Id is an identifier of the monitor, unique for all services
 	Id string

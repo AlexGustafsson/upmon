@@ -8,6 +8,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// memberlistDelegate is a delegate handling all of the events of the memberlist library
+// see https://pkg.go.dev/github.com/hashicorp/memberlist
 type memberlistDelegate struct {
 	cluster *Cluster
 }
