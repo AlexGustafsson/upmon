@@ -38,13 +38,18 @@ Upcoming.
 * Deployable as a single node or an entire cluster
 * Support for monitoring via pings, TCP sockets, HTTP requests and more
 * Easily extensible to provide new monitoring capabilities
+* Simple (optional) API for monitoring the status of services
 
 <a id="installation"></a>
 ## Installation
 
 ### Using Docker
 
-Upcoming.
+```sh
+git clone https://github.com/AlexGustafsson/upmon.git && cd upmon
+docker build -t upmon .
+docker run -it upmon help
+```
 
 ### Using Homebrew
 
@@ -86,7 +91,7 @@ Usage: upmon [global options] command [command options] [arguments]
 
 A cloud-native, distributed uptime monitor
 
-Version: v0.1.0, build 49a0a3b. Built Fri Jul 23 11:08:55 CEST 2021 using go version go1.16.5 darwin/amd64
+Version: v0.1.0, build . Built Sat Aug  7 12:36:28 UTC 2021 using go version go1.16.7 linux/amd64
 
 Options:
   --verbose   Enable verbose logging (default: false)
@@ -104,51 +109,102 @@ Run 'upmon help command' for more information on a command.
 
 Subject to change.
 
+### Core design
+
+Upmon is built to be distributed (though it doesn't need to be). Whenever a new node joins a cluster, each existing node will welcome it with their own configuration - leaving the new node up to date. Each cluster node will monitor the configured services, no matter what node initially configured it, and distribute the status results across the cluster in an eventual consistent way. This way, if a monitoring node dies, there will still be other nodes monitoring the services. Any node with the REST API enabled may be queried about the status of a service, as these are distributed in an eventual consistent manner using a gossip mechanism.
+
+### Getting started
+
+First off, you will need to install upmon using one of the techniques above. Once installed, for each node (you may have zero), create a configuration file like the example in the next section.
+
+A minimum base is provided here.
+
+```yaml
+# config.yml
+name: Alfa
+bind: "127.0.0.1:7070"
+```
+
+Next, start upmon.
+
+```sh
+upmon start --config config.yml
+```
+
+If you have configured peers, these will be connected to to form a cluster. If the cluster cannot be created, the node will die.
+
+You should now get output such as the following (slightly compressed).
+
+```
+INFO node joined                                   address="127.0.0.1" name="Alfa" node="Alfa" port="7070"
+INFO listening                                     bind="127.0.0.1:7070" node="Alfa"
+WARN no peers configured                           node="Alfa"
+INFO starting API server on 127.0.0.1:8080         node="Alfa"
+INFO starting all monitors                         node="Alfa"
+```
+
+Upmon is now up and running and will monitor your services, distributing its configuration and status to peers on the cluster. An
+
 ### Configuration
 
 Below you may find a documented example configuration. Further examples may be found in the integration directory.
 
 ```yaml
 name: Alfa
-port: 7070
+# Listen for node-to-node traffic on localhost, port 7070
+bind: "127.0.0.1:7070"
 # To form a cluster, more than one peer is required. All peers are not required
 # to be specified in the list as they peers will inform each other when a node joins
 peers:
-  - address: 127.0.0.1
-    port: 7171
-  - address: 127.0.0.1
-    port: 7272
+  - "127.0.0.1:7171"
+  - "127.0.0.1:7272"
 # The API is optional and disabled by default
 api:
   enabled: true
-  address: 127.0.0.1
-  port: 8080
+  bind: "127.0.0.1:8080"
+# Services may be concrete services or a loose connection of applications etc.
 services:
-  # Services may be concrete services or a loose connection of applications etc.
-  "example.com":
+    # The id is unique to all services in a cluster
+  - id: example
+    name: "example.com"
+    description: "Google monitoring"
+    private: false
     monitors:
       # Each service may have any amount of monitors attached. Each monitor has a type,
       # an optional name and an optional description
       - type: dns
+        # Each monitor has an id unique to the service
+        id: dns
         name: "DNS check"
         description: "Make sure DNS resolves"
         # Any configuration required by the monitors are specified under options
         options:
-          hostname: example.com
+          hostname: google.com
       - type: ping
+        id: ping
         description: "Ensure that the target is reachable"
         options:
-          hostname: example.com
+          hostname: google.com
           count: 1
           # Where applicable, durations are expressed using the human-readable form of 1h2m1s etc.
           timeout: 1s
           # Many monitors have an interval option. The interval specifies how often the monitor should check the service
           interval: 1s
       - type: http
+        id: http
         options:
-          hostname: example.com
+          hostname: google.com
           expectedStatus: 200
           timeout: 1s
+  # Services may be private. Private services are not replicated across the cluster
+  - id: private-example
+    name: "LAN-only application"
+    private: true
+    monitors:
+      - type: ping
+        id: ping
+        options:
+          hostname: 192.168.1.1
 ```
 
 ### Monitors
