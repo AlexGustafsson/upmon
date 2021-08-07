@@ -7,11 +7,52 @@ servers:
 - description: Development server
   url: http://localhost:8080/api/v1
 tags:
+- description: Origin-related endpoints
+  name: Origins
 - description: Services-related endpoints
   name: Services
 - description: Peers-related endpoints
   name: Peers
 paths:
+  /origins:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Origins'
+          description: The retrieved origins
+      summary: Retrieve all origins
+      tags:
+      - Origins
+  /origins/{originId}:
+    get:
+      parameters:
+      - description: The id of the target origin
+        explode: false
+        in: path
+        name: originId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Origin'
+          description: The retrieved origin
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not found
+      summary: Retrieve an origin
+      tags:
+      - Origins
   /services:
     get:
       responses:
@@ -24,9 +65,44 @@ paths:
       summary: Retrieve all monitored services
       tags:
       - Services
-  /services/{serviceId}:
+  /origins/{originId}/services:
     get:
       parameters:
+      - description: The id of the target origin
+        explode: false
+        in: path
+        name: originId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Services'
+          description: The retrieved services
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not found
+      summary: Retrieve all monitored services for an origin
+      tags:
+      - Services
+  /origins/{originId}/services/{serviceId}:
+    get:
+      parameters:
+      - description: The id of the target origin
+        explode: false
+        in: path
+        name: originId
+        required: true
+        schema:
+          type: string
+        style: simple
       - description: The id of the target service
         explode: false
         in: path
@@ -51,9 +127,17 @@ paths:
       summary: Retrieve a service
       tags:
       - Services
-  /services/{serviceId}/status:
+  /origins/{originId}/services/{serviceId}/status:
     get:
       parameters:
+      - description: The id of the target origin
+        explode: false
+        in: path
+        name: originId
+        required: true
+        schema:
+          type: string
+        style: simple
       - description: The id of the target service
         explode: false
         in: path
@@ -69,6 +153,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceStatus'
           description: The retrieved status
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not found
       summary: Retrieve the status of a service
       tags:
       - Services
@@ -113,6 +203,15 @@ paths:
       - Peers
 components:
   parameters:
+    OriginId:
+      description: The id of the target origin
+      explode: false
+      in: path
+      name: originId
+      required: true
+      schema:
+        type: string
+      style: simple
     ServiceId:
       description: The id of the target service
       explode: false
@@ -132,6 +231,29 @@ components:
         type: string
       style: simple
   schemas:
+    Origins:
+      example:
+        objects:
+        - id: id
+        - id: id
+      properties:
+        objects:
+          items:
+            $ref: '#/components/schemas/Origin'
+          type: array
+      required:
+      - objects
+      type: object
+    Origin:
+      example:
+        id: id
+      properties:
+        id:
+          description: A globally unique identifier for the origin
+          type: string
+      required:
+      - id
+      type: object
     Services:
       example:
         services:
@@ -168,7 +290,7 @@ components:
         status: status
       properties:
         id:
-          description: A globally unique identifier for the service
+          description: An identifier for the service, unique for the origin
           type: string
         name:
           description: Name of the service
@@ -189,6 +311,7 @@ components:
           description: The origin node from which this service is configured
           type: string
       required:
+      - id
       - lastSeen
       - name
       - origin

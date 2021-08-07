@@ -27,9 +27,21 @@ func (server *Server) Start(bind string) error {
 		DisableStartupMessage: true,
 	})
 
-	app.Get("/api/v1/services", func(c *fiber.Ctx) error {
-		services := make([]api.Service, 0)
-		response := api.NewServices(services)
+	app.Get("/api/v1/origins", func(c *fiber.Ctx) error {
+		origins := make([]api.Origin, 0)
+
+		// TODO: Accept ghost reads? With this logic, an attacker may continually request this endpoint
+		// and the server will be unable to make updates as the store is locked?
+		server.cluster.Store.Lock()
+		for _, origin := range server.cluster.Store.Origins {
+			origins = append(origins, api.Origin{
+				Id: origin.Id,
+			})
+		}
+		server.cluster.Store.Unlock()
+
+		response := api.NewOrigins(origins)
+
 		json, err := response.MarshalJSON()
 		if err != nil {
 			return err
@@ -38,7 +50,90 @@ func (server *Server) Start(bind string) error {
 		return c.Send(json)
 	})
 
-	app.Get("/api/v1/services/:serviceId", func(c *fiber.Ctx) error {
+	app.Get("/api/v1/origins/:originId", func(c *fiber.Ctx) error {
+		origin, ok := server.cluster.Store.GetOrigin(c.Params("originId"))
+		if !ok {
+			response := api.NewErrorResponse("Not found")
+
+			json, err := response.MarshalJSON()
+			if err != nil {
+				return err
+			}
+
+			return c.Send(json)
+		}
+
+		response := api.Origin{
+			Id: origin.Id,
+		}
+
+		json, err := response.MarshalJSON()
+		if err != nil {
+			return err
+		}
+
+		return c.Send(json)
+	})
+
+	app.Get("/api/v1/services", func(c *fiber.Ctx) error {
+		services := make([]api.Service, 0)
+
+		for _, service := range server.cluster.Store.GetServices() {
+			serviceResult := api.Service{
+				Id:     service.Id,
+				Status: service.Status().String(),
+			}
+
+			services = append(services, serviceResult)
+		}
+
+		response := api.NewServices(services)
+
+		json, err := response.MarshalJSON()
+		if err != nil {
+			return err
+		}
+
+		return c.Send(json)
+	})
+
+	app.Get("/api/v1/origins/:originId/services", func(c *fiber.Ctx) error {
+		services := make([]api.Service, 0)
+
+		origin, ok := server.cluster.Store.GetOrigin(c.Params("originId"))
+		if !ok {
+			response := api.NewErrorResponse("Not found")
+
+			json, err := response.MarshalJSON()
+			if err != nil {
+				return err
+			}
+
+			return c.Send(json)
+		}
+
+		origin.Lock()
+		for _, service := range origin.Services {
+			serviceResult := api.Service{
+				Id:     service.Id,
+				Status: service.Status().String(),
+			}
+
+			services = append(services, serviceResult)
+		}
+		origin.Unlock()
+
+		response := api.NewServices(services)
+
+		json, err := response.MarshalJSON()
+		if err != nil {
+			return err
+		}
+
+		return c.Send(json)
+	})
+
+	app.Get("/api/v1/origins/:originId/services/:serviceId", func(c *fiber.Ctx) error {
 		response := api.NewErrorResponse("Not found")
 		json, err := response.MarshalJSON()
 		if err != nil {
@@ -48,7 +143,7 @@ func (server *Server) Start(bind string) error {
 		return c.Status(404).Send(json)
 	})
 
-	app.Get("/api/v1/services/:serviceId/status", func(c *fiber.Ctx) error {
+	app.Get("/api/v1/origins/:originId/services/:serviceId/status", func(c *fiber.Ctx) error {
 		response := api.NewServiceStatus("unknown")
 		json, err := response.MarshalJSON()
 		if err != nil {

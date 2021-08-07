@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/AlexGustafsson/upmon/internal/configuration"
+	"github.com/AlexGustafsson/upmon/internal/storage"
 	"github.com/AlexGustafsson/upmon/monitoring"
 	"github.com/hashicorp/memberlist"
 	log "github.com/sirupsen/logrus"
@@ -24,6 +25,7 @@ type Cluster struct {
 	Memberlist      *memberlist.Memberlist
 	Members         map[string]*ClusterMember
 	ServicesUpdates chan []*configuration.ServiceConfiguration
+	Store           *storage.Store
 }
 
 func NewCluster(config *configuration.Configuration) (*Cluster, error) {
@@ -38,6 +40,7 @@ func NewCluster(config *configuration.Configuration) (*Cluster, error) {
 		config:          config,
 		Members:         members,
 		ServicesUpdates: make(chan []*configuration.ServiceConfiguration),
+		Store:           storage.NewStore(),
 	}
 
 	memberlistConfig, err := config.MemberlistConfig()
@@ -170,4 +173,5 @@ func (cluster *Cluster) BroadcastStatusUpdate(origin string, serviceId string, m
 
 func (cluster *Cluster) updateStatus(statusUpdate *StatusUpdateMessage) {
 	log.Debugf("Received status update message from '%s' for node '%s', service %s, monitor %s: %s", statusUpdate.Node, statusUpdate.Origin, statusUpdate.ServiceId, statusUpdate.MonitorId, statusUpdate.Status.String())
+	cluster.Store.AssertOrigin(statusUpdate.Origin).AssertService(statusUpdate.ServiceId).AssertMonitor(statusUpdate.MonitorId).SetStatusForNode(statusUpdate.Node, statusUpdate.Status)
 }

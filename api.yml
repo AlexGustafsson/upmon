@@ -13,6 +13,39 @@ servers:
 
 
 paths:
+  /origins:
+    get:
+      summary: Retrieve all origins
+      tags:
+        - Origins
+      responses:
+        "200":
+            description: The retrieved origins
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Origins"
+  /origins/{originId}:
+    get:
+      summary: Retrieve an origin
+      tags:
+          - Origins
+      parameters:
+        - $ref: "#/components/parameters/OriginId"
+      responses:
+        "200":
+          description: The retrieved origin
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Origin"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /services:
     get:
       summary: Retrieve all monitored services
@@ -25,12 +58,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Services"
-  /services/{serviceId}:
+  /origins/{originId}/services:
+    get:
+      summary: Retrieve all monitored services for an origin
+      tags:
+        - Services
+      parameters:
+        - $ref: "#/components/parameters/OriginId"
+      responses:
+        "200":
+          description: The retrieved services
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Services"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /origins/{originId}/services/{serviceId}:
     get:
       summary: Retrieve a service
       tags:
         - Services
       parameters:
+        - $ref: "#/components/parameters/OriginId"
         - $ref: "#/components/parameters/ServiceId"
       responses:
         "200":
@@ -45,12 +99,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-  /services/{serviceId}/status:
+  /origins/{originId}/services/{serviceId}/status:
     get:
       summary: Retrieve the status of a service
       tags:
         - Services
       parameters:
+        - $ref: "#/components/parameters/OriginId"
         - $ref: "#/components/parameters/ServiceId"
       responses:
         "200":
@@ -59,6 +114,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceStatus"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /peers:
     get:
@@ -95,6 +156,8 @@ paths:
 
 
 tags:
+  - name: Origins
+    description: Origin-related endpoints
   - name: Services
     description: Services-related endpoints
   - name: Peers
@@ -103,6 +166,24 @@ tags:
 
 components:
   schemas:
+    Origins:
+      type: object
+      required:
+        - objects
+      properties:
+        objects:
+          type: array
+          items:
+            $ref: "#/components/schemas/Origin"
+    Origin:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: A globally unique identifier for the origin
+
     Services:
       type: object
       required:
@@ -115,6 +196,7 @@ components:
     Service:
       type: object
       required:
+        - id
         - name
         - status
         - private
@@ -124,7 +206,7 @@ components:
       properties:
         id:
           type: string
-          description: A globally unique identifier for the service
+          description: An identifier for the service, unique for the origin
         name:
           type: string
           description: Name of the service
@@ -187,6 +269,13 @@ components:
 
 
   parameters:
+    OriginId:
+      in: path
+      name: originId
+      schema:
+        type: string
+      required: true
+      description: The id of the target origin
     ServiceId:
       in: path
       name: serviceId

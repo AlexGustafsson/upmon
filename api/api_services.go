@@ -27,24 +27,27 @@ var (
 // ServicesApiService ServicesApi service
 type ServicesApiService service
 
-type ApiServicesGetRequest struct {
+type ApiOriginsOriginIdServicesGetRequest struct {
 	ctx        _context.Context
 	ApiService *ServicesApiService
+	originId   string
 }
 
-func (r ApiServicesGetRequest) Execute() (Services, *_nethttp.Response, error) {
-	return r.ApiService.ServicesGetExecute(r)
+func (r ApiOriginsOriginIdServicesGetRequest) Execute() (Services, *_nethttp.Response, error) {
+	return r.ApiService.OriginsOriginIdServicesGetExecute(r)
 }
 
 /*
- * ServicesGet Retrieve all monitored services
+ * OriginsOriginIdServicesGet Retrieve all monitored services for an origin
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiServicesGetRequest
+ * @param originId The id of the target origin
+ * @return ApiOriginsOriginIdServicesGetRequest
  */
-func (a *ServicesApiService) ServicesGet(ctx _context.Context) ApiServicesGetRequest {
-	return ApiServicesGetRequest{
+func (a *ServicesApiService) OriginsOriginIdServicesGet(ctx _context.Context, originId string) ApiOriginsOriginIdServicesGetRequest {
+	return ApiOriginsOriginIdServicesGetRequest{
 		ApiService: a,
 		ctx:        ctx,
+		originId:   originId,
 	}
 }
 
@@ -52,7 +55,7 @@ func (a *ServicesApiService) ServicesGet(ctx _context.Context) ApiServicesGetReq
  * Execute executes the request
  * @return Services
  */
-func (a *ServicesApiService) ServicesGetExecute(r ApiServicesGetRequest) (Services, *_nethttp.Response, error) {
+func (a *ServicesApiService) OriginsOriginIdServicesGetExecute(r ApiOriginsOriginIdServicesGetRequest) (Services, *_nethttp.Response, error) {
 	var (
 		localVarHTTPMethod   = _nethttp.MethodGet
 		localVarPostBody     interface{}
@@ -62,12 +65,13 @@ func (a *ServicesApiService) ServicesGetExecute(r ApiServicesGetRequest) (Servic
 		localVarReturnValue  Services
 	)
 
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ServicesApiService.ServicesGet")
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ServicesApiService.OriginsOriginIdServicesGet")
 	if err != nil {
 		return localVarReturnValue, nil, GenericOpenAPIError{error: err.Error()}
 	}
 
-	localVarPath := localBasePath + "/services"
+	localVarPath := localBasePath + "/origins/{originId}/services"
+	localVarPath = strings.Replace(localVarPath, "{"+"originId"+"}", _neturl.PathEscape(parameterToString(r.originId, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -112,6 +116,15 @@ func (a *ServicesApiService) ServicesGetExecute(r ApiServicesGetRequest) (Servic
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
+		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -127,26 +140,29 @@ func (a *ServicesApiService) ServicesGetExecute(r ApiServicesGetRequest) (Servic
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
-type ApiServicesServiceIdGetRequest struct {
+type ApiOriginsOriginIdServicesServiceIdGetRequest struct {
 	ctx        _context.Context
 	ApiService *ServicesApiService
+	originId   string
 	serviceId  string
 }
 
-func (r ApiServicesServiceIdGetRequest) Execute() (Service, *_nethttp.Response, error) {
-	return r.ApiService.ServicesServiceIdGetExecute(r)
+func (r ApiOriginsOriginIdServicesServiceIdGetRequest) Execute() (Service, *_nethttp.Response, error) {
+	return r.ApiService.OriginsOriginIdServicesServiceIdGetExecute(r)
 }
 
 /*
- * ServicesServiceIdGet Retrieve a service
+ * OriginsOriginIdServicesServiceIdGet Retrieve a service
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param originId The id of the target origin
  * @param serviceId The id of the target service
- * @return ApiServicesServiceIdGetRequest
+ * @return ApiOriginsOriginIdServicesServiceIdGetRequest
  */
-func (a *ServicesApiService) ServicesServiceIdGet(ctx _context.Context, serviceId string) ApiServicesServiceIdGetRequest {
-	return ApiServicesServiceIdGetRequest{
+func (a *ServicesApiService) OriginsOriginIdServicesServiceIdGet(ctx _context.Context, originId string, serviceId string) ApiOriginsOriginIdServicesServiceIdGetRequest {
+	return ApiOriginsOriginIdServicesServiceIdGetRequest{
 		ApiService: a,
 		ctx:        ctx,
+		originId:   originId,
 		serviceId:  serviceId,
 	}
 }
@@ -155,7 +171,7 @@ func (a *ServicesApiService) ServicesServiceIdGet(ctx _context.Context, serviceI
  * Execute executes the request
  * @return Service
  */
-func (a *ServicesApiService) ServicesServiceIdGetExecute(r ApiServicesServiceIdGetRequest) (Service, *_nethttp.Response, error) {
+func (a *ServicesApiService) OriginsOriginIdServicesServiceIdGetExecute(r ApiOriginsOriginIdServicesServiceIdGetRequest) (Service, *_nethttp.Response, error) {
 	var (
 		localVarHTTPMethod   = _nethttp.MethodGet
 		localVarPostBody     interface{}
@@ -165,12 +181,13 @@ func (a *ServicesApiService) ServicesServiceIdGetExecute(r ApiServicesServiceIdG
 		localVarReturnValue  Service
 	)
 
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ServicesApiService.ServicesServiceIdGet")
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ServicesApiService.OriginsOriginIdServicesServiceIdGet")
 	if err != nil {
 		return localVarReturnValue, nil, GenericOpenAPIError{error: err.Error()}
 	}
 
-	localVarPath := localBasePath + "/services/{serviceId}"
+	localVarPath := localBasePath + "/origins/{originId}/services/{serviceId}"
+	localVarPath = strings.Replace(localVarPath, "{"+"originId"+"}", _neturl.PathEscape(parameterToString(r.originId, "")), -1)
 	localVarPath = strings.Replace(localVarPath, "{"+"serviceId"+"}", _neturl.PathEscape(parameterToString(r.serviceId, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
@@ -240,26 +257,29 @@ func (a *ServicesApiService) ServicesServiceIdGetExecute(r ApiServicesServiceIdG
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
-type ApiServicesServiceIdStatusGetRequest struct {
+type ApiOriginsOriginIdServicesServiceIdStatusGetRequest struct {
 	ctx        _context.Context
 	ApiService *ServicesApiService
+	originId   string
 	serviceId  string
 }
 
-func (r ApiServicesServiceIdStatusGetRequest) Execute() (ServiceStatus, *_nethttp.Response, error) {
-	return r.ApiService.ServicesServiceIdStatusGetExecute(r)
+func (r ApiOriginsOriginIdServicesServiceIdStatusGetRequest) Execute() (ServiceStatus, *_nethttp.Response, error) {
+	return r.ApiService.OriginsOriginIdServicesServiceIdStatusGetExecute(r)
 }
 
 /*
- * ServicesServiceIdStatusGet Retrieve the status of a service
+ * OriginsOriginIdServicesServiceIdStatusGet Retrieve the status of a service
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param originId The id of the target origin
  * @param serviceId The id of the target service
- * @return ApiServicesServiceIdStatusGetRequest
+ * @return ApiOriginsOriginIdServicesServiceIdStatusGetRequest
  */
-func (a *ServicesApiService) ServicesServiceIdStatusGet(ctx _context.Context, serviceId string) ApiServicesServiceIdStatusGetRequest {
-	return ApiServicesServiceIdStatusGetRequest{
+func (a *ServicesApiService) OriginsOriginIdServicesServiceIdStatusGet(ctx _context.Context, originId string, serviceId string) ApiOriginsOriginIdServicesServiceIdStatusGetRequest {
+	return ApiOriginsOriginIdServicesServiceIdStatusGetRequest{
 		ApiService: a,
 		ctx:        ctx,
+		originId:   originId,
 		serviceId:  serviceId,
 	}
 }
@@ -268,7 +288,7 @@ func (a *ServicesApiService) ServicesServiceIdStatusGet(ctx _context.Context, se
  * Execute executes the request
  * @return ServiceStatus
  */
-func (a *ServicesApiService) ServicesServiceIdStatusGetExecute(r ApiServicesServiceIdStatusGetRequest) (ServiceStatus, *_nethttp.Response, error) {
+func (a *ServicesApiService) OriginsOriginIdServicesServiceIdStatusGetExecute(r ApiOriginsOriginIdServicesServiceIdStatusGetRequest) (ServiceStatus, *_nethttp.Response, error) {
 	var (
 		localVarHTTPMethod   = _nethttp.MethodGet
 		localVarPostBody     interface{}
@@ -278,13 +298,123 @@ func (a *ServicesApiService) ServicesServiceIdStatusGetExecute(r ApiServicesServ
 		localVarReturnValue  ServiceStatus
 	)
 
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ServicesApiService.ServicesServiceIdStatusGet")
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ServicesApiService.OriginsOriginIdServicesServiceIdStatusGet")
 	if err != nil {
 		return localVarReturnValue, nil, GenericOpenAPIError{error: err.Error()}
 	}
 
-	localVarPath := localBasePath + "/services/{serviceId}/status"
+	localVarPath := localBasePath + "/origins/{originId}/services/{serviceId}/status"
+	localVarPath = strings.Replace(localVarPath, "{"+"originId"+"}", _neturl.PathEscape(parameterToString(r.originId, "")), -1)
 	localVarPath = strings.Replace(localVarPath, "{"+"serviceId"+"}", _neturl.PathEscape(parameterToString(r.serviceId, "")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := _neturl.Values{}
+	localVarFormParams := _neturl.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFormFileName, localVarFileName, localVarFileBytes)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiServicesGetRequest struct {
+	ctx        _context.Context
+	ApiService *ServicesApiService
+}
+
+func (r ApiServicesGetRequest) Execute() (Services, *_nethttp.Response, error) {
+	return r.ApiService.ServicesGetExecute(r)
+}
+
+/*
+ * ServicesGet Retrieve all monitored services
+ * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @return ApiServicesGetRequest
+ */
+func (a *ServicesApiService) ServicesGet(ctx _context.Context) ApiServicesGetRequest {
+	return ApiServicesGetRequest{
+		ApiService: a,
+		ctx:        ctx,
+	}
+}
+
+/*
+ * Execute executes the request
+ * @return Services
+ */
+func (a *ServicesApiService) ServicesGetExecute(r ApiServicesGetRequest) (Services, *_nethttp.Response, error) {
+	var (
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		localVarFormFileName string
+		localVarFileName     string
+		localVarFileBytes    []byte
+		localVarReturnValue  Services
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ServicesApiService.ServicesGet")
+	if err != nil {
+		return localVarReturnValue, nil, GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/services"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}

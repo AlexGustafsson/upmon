@@ -78,16 +78,21 @@ All URIs are relative to *http://localhost:8080/api/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*OriginsApi* | [**OriginsGet**](docs/OriginsApi.md#originsget) | **Get** /origins | Retrieve all origins
+*OriginsApi* | [**OriginsOriginIdGet**](docs/OriginsApi.md#originsoriginidget) | **Get** /origins/{originId} | Retrieve an origin
 *PeersApi* | [**PeersGet**](docs/PeersApi.md#peersget) | **Get** /peers | Retrieve all peers
 *PeersApi* | [**PeersPeerIdGet**](docs/PeersApi.md#peerspeeridget) | **Get** /peers/{peerId} | Retrieve a peer
+*ServicesApi* | [**OriginsOriginIdServicesGet**](docs/ServicesApi.md#originsoriginidservicesget) | **Get** /origins/{originId}/services | Retrieve all monitored services for an origin
+*ServicesApi* | [**OriginsOriginIdServicesServiceIdGet**](docs/ServicesApi.md#originsoriginidservicesserviceidget) | **Get** /origins/{originId}/services/{serviceId} | Retrieve a service
+*ServicesApi* | [**OriginsOriginIdServicesServiceIdStatusGet**](docs/ServicesApi.md#originsoriginidservicesserviceidstatusget) | **Get** /origins/{originId}/services/{serviceId}/status | Retrieve the status of a service
 *ServicesApi* | [**ServicesGet**](docs/ServicesApi.md#servicesget) | **Get** /services | Retrieve all monitored services
-*ServicesApi* | [**ServicesServiceIdGet**](docs/ServicesApi.md#servicesserviceidget) | **Get** /services/{serviceId} | Retrieve a service
-*ServicesApi* | [**ServicesServiceIdStatusGet**](docs/ServicesApi.md#servicesserviceidstatusget) | **Get** /services/{serviceId}/status | Retrieve the status of a service
 
 
 ## Documentation For Models
 
  - [ErrorResponse](docs/ErrorResponse.md)
+ - [Origin](docs/Origin.md)
+ - [Origins](docs/Origins.md)
  - [Peer](docs/Peer.md)
  - [Peers](docs/Peers.md)
  - [Service](docs/Service.md)

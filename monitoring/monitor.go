@@ -23,6 +23,14 @@ type Monitor struct {
 
 type Status core.Status
 
+const (
+	StatusUp Status = iota
+	StatusTransitioningUp
+	StatusTransitioningDown
+	StatusDown
+	StatusUnknown
+)
+
 func (status Status) String() string {
 	return core.Status(status).String()
 }

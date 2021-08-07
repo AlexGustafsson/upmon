@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Id** | Pointer to **string** | A globally unique identifier for the service | [optional] 
+**Id** | **string** | An identifier for the service, unique for the origin | 
 **Name** | **string** | Name of the service | 
 **Description** | Pointer to **string** | Description of the service | [optional] 
 **Private** | **bool** | Whether or not the config is shared with the cluster | 
@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 
 ### NewService
 
-`func NewService(name string, private bool, status string, lastSeen string, origin string, ) *Service`
+`func NewService(id string, name string, private bool, status string, lastSeen string, origin string, ) *Service`
 
 NewService instantiates a new Service object
 This constructor will assign default values to properties that have it defined,
@@ -50,11 +50,6 @@ and a boolean to check if the value has been set.
 
 SetId sets Id field to given value.
 
-### HasId
-
-`func (o *Service) HasId() bool`
-
-HasId returns a boolean if a field has been set.
 
 ### GetName
 
