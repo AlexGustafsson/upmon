@@ -12,7 +12,7 @@ type Check interface {
 	// Check the status of a service
 	Perform() (Status, error)
 	// Watch the status of a service continously
-	Watch(update chan<- *ServiceStatus, stop <-chan bool, wg sync.WaitGroup) error
+	Watch(update chan<- *ServiceStatus, stop <-chan bool, wg *sync.WaitGroup) error
 	// Config is the configuration used for the monitor
 	Config() MonitorConfiguration
 }

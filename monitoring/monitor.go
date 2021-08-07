@@ -38,7 +38,7 @@ func (monitor *Monitor) Watch(updates chan *MonitorStatus) error {
 	stop := make(chan bool)
 	monitor.stop = make(chan bool)
 
-	err := monitor.Check.Watch(upstreamUpdates, stop, monitor.wg)
+	err := monitor.Check.Watch(upstreamUpdates, stop, &monitor.wg)
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func (monitor *Monitor) Watch(updates chan *MonitorStatus) error {
 }
 
 // Stop stops the monitor, blocking until it's stopped
-func (monitor *Monitor) Stop(wg sync.WaitGroup) {
+func (monitor *Monitor) Stop(wg *sync.WaitGroup) {
 	wg.Add(1)
 	close(monitor.stop)
 	monitor.wg.Wait()

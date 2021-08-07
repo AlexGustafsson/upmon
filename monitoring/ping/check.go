@@ -67,7 +67,7 @@ func (check *Check) Perform() (core.Status, error) {
 	return core.StatusDown, nil
 }
 
-func (check *Check) Watch(update chan<- *core.ServiceStatus, stop <-chan bool, wg sync.WaitGroup) error {
+func (check *Check) Watch(update chan<- *core.ServiceStatus, stop <-chan bool, wg *sync.WaitGroup) error {
 	wg.Add(1)
 	go func() {
 		for {

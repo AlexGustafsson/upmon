@@ -114,7 +114,7 @@ func (guard *Guard) stopAllMonitors() {
 	log.Infof("stopping all monitors")
 	var wg sync.WaitGroup
 	for _, monitor := range guard.activeMonitors {
-		go monitor.Stop(wg)
+		go monitor.Stop(&wg)
 	}
 	wg.Wait()
 	guard.activeMonitors = guard.activeMonitors[:0]
