@@ -21,7 +21,7 @@ ifeq ($(shell uname),Darwin)
 	CC=clang
 endif
 
-.PHONY: help build generate format lint test clean
+.PHONY: help build generate format lint test clean install-tools
 
 # Produce a short description of available make commands
 help:
@@ -35,6 +35,8 @@ build: build/upmon
 # brew install openapi-generator
 generate: api.yml
 	openapi-generator generate --package-name api --generator-name go --input-spec api.yml --output api
+# The code is not automatically formatted after generation
+	gofmt -l -s -w api
 
 # Format Go code
 format: $(server_source) Makefile
@@ -64,7 +66,10 @@ test: $(server_source) Makefile
 # Build for the native platform
 build/upmon: $(server_source) Makefile
 	go generate ./...
-	go build $(BUILD_FLAGS) -o $@ cmd/upmon.go
+	go build -tags tools $(BUILD_FLAGS) -o $@ cmd/upmon.go
+
+install-tools:
+	cat tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -tI % go install %
 
 # Clean all dynamically created files
 clean:
