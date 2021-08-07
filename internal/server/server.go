@@ -80,8 +80,10 @@ func (server *Server) Start(bind string) error {
 
 		for _, service := range server.cluster.Store.GetServices() {
 			serviceResult := api.Service{
-				Id:     service.Id,
-				Status: service.Status().String(),
+				Id: service.Id,
+				Status: api.ServiceStatus{
+					Status: service.Status().String(),
+				},
 			}
 
 			services = append(services, serviceResult)
@@ -115,8 +117,7 @@ func (server *Server) Start(bind string) error {
 		origin.Lock()
 		for _, service := range origin.Services {
 			serviceResult := api.Service{
-				Id:     service.Id,
-				Status: service.Status().String(),
+				Id: service.Id,
 			}
 
 			services = append(services, serviceResult)
@@ -134,23 +135,202 @@ func (server *Server) Start(bind string) error {
 	})
 
 	app.Get("/api/v1/origins/:originId/services/:serviceId", func(c *fiber.Ctx) error {
-		response := api.NewErrorResponse("Not found")
+		origin, ok := server.cluster.Store.GetOrigin(c.Params("originId"))
+		if !ok {
+			response := api.NewErrorResponse("Not found")
+			json, err := response.MarshalJSON()
+			if err != nil {
+				return err
+			}
+
+			return c.Status(404).Send(json)
+		}
+
+		service, ok := origin.GetService(c.Params("serviceId"))
+		if !ok {
+			response := api.NewErrorResponse("Not found")
+			json, err := response.MarshalJSON()
+			if err != nil {
+				return err
+			}
+
+			return c.Status(404).Send(json)
+		}
+
+		response := api.Service{
+			Id: service.Id,
+		}
 		json, err := response.MarshalJSON()
 		if err != nil {
 			return err
 		}
 
-		return c.Status(404).Send(json)
+		return c.Status(200).Send(json)
 	})
 
 	app.Get("/api/v1/origins/:originId/services/:serviceId/status", func(c *fiber.Ctx) error {
-		response := api.NewServiceStatus("unknown")
+		origin, ok := server.cluster.Store.GetOrigin(c.Params("originId"))
+		if !ok {
+			response := api.NewErrorResponse("Not found")
+			json, err := response.MarshalJSON()
+			if err != nil {
+				return err
+			}
+
+			return c.Status(404).Send(json)
+		}
+
+		service, ok := origin.GetService(c.Params("serviceId"))
+		if !ok {
+			response := api.NewErrorResponse("Not found")
+			json, err := response.MarshalJSON()
+			if err != nil {
+				return err
+			}
+
+			return c.Status(404).Send(json)
+		}
+
+		response := api.ServiceStatus{
+			Status: service.Status().String(),
+		}
 		json, err := response.MarshalJSON()
 		if err != nil {
 			return err
 		}
 
-		return c.Send(json)
+		return c.Status(200).Send(json)
+	})
+
+	app.Get("/api/v1/origins/:originId/services/:serviceId/monitors", func(c *fiber.Ctx) error {
+		origin, ok := server.cluster.Store.GetOrigin(c.Params("originId"))
+		if !ok {
+			response := api.NewErrorResponse("Not found")
+			json, err := response.MarshalJSON()
+			if err != nil {
+				return err
+			}
+
+			return c.Status(404).Send(json)
+		}
+
+		service, ok := origin.GetService(c.Params("serviceId"))
+		if !ok {
+			response := api.NewErrorResponse("Not found")
+			json, err := response.MarshalJSON()
+			if err != nil {
+				return err
+			}
+
+			return c.Status(404).Send(json)
+		}
+
+		service.Lock()
+		monitors := make([]api.Monitor, 0)
+		for _, monitor := range service.Monitors {
+			monitors = append(monitors, api.Monitor{
+				Id: monitor.Id,
+			})
+		}
+		service.Unlock()
+
+		response := api.NewMonitors(monitors)
+		json, err := response.MarshalJSON()
+		if err != nil {
+			return err
+		}
+
+		return c.Status(200).Send(json)
+	})
+
+	app.Get("/api/v1/origins/:originId/services/:serviceId/monitors/:monitorId", func(c *fiber.Ctx) error {
+		origin, ok := server.cluster.Store.GetOrigin(c.Params("originId"))
+		if !ok {
+			response := api.NewErrorResponse("Not found")
+			json, err := response.MarshalJSON()
+			if err != nil {
+				return err
+			}
+
+			return c.Status(404).Send(json)
+		}
+
+		service, ok := origin.GetService(c.Params("serviceId"))
+		if !ok {
+			response := api.NewErrorResponse("Not found")
+			json, err := response.MarshalJSON()
+			if err != nil {
+				return err
+			}
+
+			return c.Status(404).Send(json)
+		}
+
+		monitor, ok := service.GetMonitor(c.Params("monitorId"))
+		if !ok {
+			response := api.NewErrorResponse("Not found")
+			json, err := response.MarshalJSON()
+			if err != nil {
+				return err
+			}
+
+			return c.Status(404).Send(json)
+		}
+
+		response := api.Monitor{
+			Id: monitor.Id,
+		}
+		json, err := response.MarshalJSON()
+		if err != nil {
+			return err
+		}
+
+		return c.Status(200).Send(json)
+	})
+
+	app.Get("/api/v1/origins/:originId/services/:serviceId/monitors/:monitorId/status", func(c *fiber.Ctx) error {
+		origin, ok := server.cluster.Store.GetOrigin(c.Params("originId"))
+		if !ok {
+			response := api.NewErrorResponse("Not found")
+			json, err := response.MarshalJSON()
+			if err != nil {
+				return err
+			}
+
+			return c.Status(404).Send(json)
+		}
+
+		service, ok := origin.GetService(c.Params("serviceId"))
+		if !ok {
+			response := api.NewErrorResponse("Not found")
+			json, err := response.MarshalJSON()
+			if err != nil {
+				return err
+			}
+
+			return c.Status(404).Send(json)
+		}
+
+		monitor, ok := service.GetMonitor(c.Params("monitorId"))
+		if !ok {
+			response := api.NewErrorResponse("Not found")
+			json, err := response.MarshalJSON()
+			if err != nil {
+				return err
+			}
+
+			return c.Status(404).Send(json)
+		}
+
+		response := api.MonitorStatus{
+			Status: monitor.Status().String(),
+		}
+		json, err := response.MarshalJSON()
+		if err != nil {
+			return err
+		}
+
+		return c.Status(200).Send(json)
 	})
 
 	app.Get("/api/v1/peers", func(c *fiber.Ctx) error {

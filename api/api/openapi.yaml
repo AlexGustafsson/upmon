@@ -11,6 +11,8 @@ tags:
   name: Origins
 - description: Services-related endpoints
   name: Services
+- description: Monitors-related endpoints
+  name: Monitors
 - description: Peers-related endpoints
   name: Peers
 paths:
@@ -162,6 +164,127 @@ paths:
       summary: Retrieve the status of a service
       tags:
       - Services
+  /origins/{originId}/services/{serviceId}/monitors:
+    get:
+      parameters:
+      - description: The id of the target origin
+        explode: false
+        in: path
+        name: originId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The id of the target service
+        explode: false
+        in: path
+        name: serviceId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Monitors'
+          description: The retrieved monitors
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not found
+      summary: Retrieve all monitors for a service of an origin
+      tags:
+      - Monitors
+  /origins/{originId}/services/{serviceId}/monitors/{monitorId}:
+    get:
+      parameters:
+      - description: The id of the target origin
+        explode: false
+        in: path
+        name: originId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The id of the target service
+        explode: false
+        in: path
+        name: serviceId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The id of the target monitor
+        explode: false
+        in: path
+        name: monitorId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Monitor'
+          description: The retrieved monitor
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not found
+      summary: Retrieve a monitor of a service from an origin
+      tags:
+      - Monitors
+  /origins/{originId}/services/{serviceId}/monitors/{monitorId}/status:
+    get:
+      parameters:
+      - description: The id of the target origin
+        explode: false
+        in: path
+        name: originId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The id of the target service
+        explode: false
+        in: path
+        name: serviceId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The id of the target monitor
+        explode: false
+        in: path
+        name: monitorId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitorStatus'
+          description: The retrieved status
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not found
+      summary: Retrieve the status of a monitor
+      tags:
+      - Monitors
   /peers:
     get:
       responses:
@@ -221,6 +344,15 @@ components:
       schema:
         type: string
       style: simple
+    MonitorId:
+      description: The id of the target monitor
+      explode: false
+      in: path
+      name: monitorId
+      required: true
+      schema:
+        type: string
+      style: simple
     PeerId:
       description: The id of the target peer
       explode: false
@@ -263,14 +395,16 @@ components:
           name: name
           description: description
           id: id
-          status: status
+          status:
+            status: status
         - private: ""
           lastSeen: lastSeen
           origin: origin
           name: name
           description: description
           id: id
-          status: status
+          status:
+            status: status
       properties:
         services:
           items:
@@ -287,7 +421,8 @@ components:
         name: name
         description: description
         id: id
-        status: status
+        status:
+          status: status
       properties:
         id:
           description: An identifier for the service, unique for the origin
@@ -302,8 +437,7 @@ components:
           description: Whether or not the config is shared with the cluster
           type: bool
         status:
-          description: The current status of the service
-          type: string
+          $ref: '#/components/schemas/ServiceStatus'
         lastSeen:
           description: The timestamp at which the service was last seen responding
           type: string
@@ -325,6 +459,76 @@ components:
       properties:
         status:
           description: The current status of the service
+          type: string
+      required:
+      - status
+      type: object
+    Monitors:
+      example:
+        monitors:
+        - service: service
+          name: name
+          description: description
+          id: id
+          type: type
+          status:
+            status: status
+        - service: service
+          name: name
+          description: description
+          id: id
+          type: type
+          status:
+            status: status
+      properties:
+        monitors:
+          items:
+            $ref: '#/components/schemas/Monitor'
+          type: array
+      required:
+      - monitors
+      type: object
+    Monitor:
+      example:
+        service: service
+        name: name
+        description: description
+        id: id
+        type: type
+        status:
+          status: status
+      properties:
+        id:
+          description: An identifier for the monitor, unique for the service
+          type: string
+        name:
+          description: Name of the monitor
+          type: string
+        description:
+          description: Description of the monitor
+          type: string
+        type:
+          description: Type of the monitor
+          type: string
+        service:
+          description: The id of the parent service
+          type: string
+        status:
+          $ref: '#/components/schemas/MonitorStatus'
+      required:
+      - description
+      - id
+      - name
+      - service
+      - status
+      - type
+      type: object
+    MonitorStatus:
+      example:
+        status: status
+      properties:
+        status:
+          description: The current status of the monitor
           type: string
       required:
       - status

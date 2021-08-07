@@ -8,7 +8,7 @@ Name | Type | Description | Notes
 **Name** | **string** | Name of the service | 
 **Description** | Pointer to **string** | Description of the service | [optional] 
 **Private** | **bool** | Whether or not the config is shared with the cluster | 
-**Status** | **string** | The current status of the service | 
+**Status** | [**ServiceStatus**](ServiceStatus.md) |  | 
 **LastSeen** | **string** | The timestamp at which the service was last seen responding | 
 **Origin** | **string** | The origin node from which this service is configured | 
 
@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 
 ### NewService
 
-`func NewService(id string, name string, private bool, status string, lastSeen string, origin string, ) *Service`
+`func NewService(id string, name string, private bool, status ServiceStatus, lastSeen string, origin string, ) *Service`
 
 NewService instantiates a new Service object
 This constructor will assign default values to properties that have it defined,
@@ -118,20 +118,20 @@ SetPrivate sets Private field to given value.
 
 ### GetStatus
 
-`func (o *Service) GetStatus() string`
+`func (o *Service) GetStatus() ServiceStatus`
 
 GetStatus returns the Status field if non-nil, zero value otherwise.
 
 ### GetStatusOk
 
-`func (o *Service) GetStatusOk() (*string, bool)`
+`func (o *Service) GetStatusOk() (*ServiceStatus, bool)`
 
 GetStatusOk returns a tuple with the Status field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetStatus
 
-`func (o *Service) SetStatus(v string)`
+`func (o *Service) SetStatus(v ServiceStatus)`
 
 SetStatus sets Status field to given value.
 

@@ -23,9 +23,8 @@ type Service struct {
 	// Description of the service
 	Description *string `json:"description,omitempty"`
 	// Whether or not the config is shared with the cluster
-	Private bool `json:"private"`
-	// The current status of the service
-	Status string `json:"status"`
+	Private bool          `json:"private"`
+	Status  ServiceStatus `json:"status"`
 	// The timestamp at which the service was last seen responding
 	LastSeen string `json:"lastSeen"`
 	// The origin node from which this service is configured
@@ -36,7 +35,7 @@ type Service struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewService(id string, name string, private bool, status string, lastSeen string, origin string) *Service {
+func NewService(id string, name string, private bool, status ServiceStatus, lastSeen string, origin string) *Service {
 	this := Service{}
 	this.Id = id
 	this.Name = name
@@ -160,9 +159,9 @@ func (o *Service) SetPrivate(v bool) {
 }
 
 // GetStatus returns the Status field value
-func (o *Service) GetStatus() string {
+func (o *Service) GetStatus() ServiceStatus {
 	if o == nil {
-		var ret string
+		var ret ServiceStatus
 		return ret
 	}
 
@@ -171,7 +170,7 @@ func (o *Service) GetStatus() string {
 
 // GetStatusOk returns a tuple with the Status field value
 // and a boolean to check if the value has been set.
-func (o *Service) GetStatusOk() (*string, bool) {
+func (o *Service) GetStatusOk() (*ServiceStatus, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -179,7 +178,7 @@ func (o *Service) GetStatusOk() (*string, bool) {
 }
 
 // SetStatus sets field value
-func (o *Service) SetStatus(v string) {
+func (o *Service) SetStatus(v ServiceStatus) {
 	o.Status = v
 }
 

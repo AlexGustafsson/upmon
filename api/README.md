@@ -78,6 +78,9 @@ All URIs are relative to *http://localhost:8080/api/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*MonitorsApi* | [**OriginsOriginIdServicesServiceIdMonitorsGet**](docs/MonitorsApi.md#originsoriginidservicesserviceidmonitorsget) | **Get** /origins/{originId}/services/{serviceId}/monitors | Retrieve all monitors for a service of an origin
+*MonitorsApi* | [**OriginsOriginIdServicesServiceIdMonitorsMonitorIdGet**](docs/MonitorsApi.md#originsoriginidservicesserviceidmonitorsmonitoridget) | **Get** /origins/{originId}/services/{serviceId}/monitors/{monitorId} | Retrieve a monitor of a service from an origin
+*MonitorsApi* | [**OriginsOriginIdServicesServiceIdMonitorsMonitorIdStatusGet**](docs/MonitorsApi.md#originsoriginidservicesserviceidmonitorsmonitoridstatusget) | **Get** /origins/{originId}/services/{serviceId}/monitors/{monitorId}/status | Retrieve the status of a monitor
 *OriginsApi* | [**OriginsGet**](docs/OriginsApi.md#originsget) | **Get** /origins | Retrieve all origins
 *OriginsApi* | [**OriginsOriginIdGet**](docs/OriginsApi.md#originsoriginidget) | **Get** /origins/{originId} | Retrieve an origin
 *PeersApi* | [**PeersGet**](docs/PeersApi.md#peersget) | **Get** /peers | Retrieve all peers
@@ -91,6 +94,9 @@ Class | Method | HTTP request | Description
 ## Documentation For Models
 
  - [ErrorResponse](docs/ErrorResponse.md)
+ - [Monitor](docs/Monitor.md)
+ - [MonitorStatus](docs/MonitorStatus.md)
+ - [Monitors](docs/Monitors.md)
  - [Origin](docs/Origin.md)
  - [Origins](docs/Origins.md)
  - [Peer](docs/Peer.md)
