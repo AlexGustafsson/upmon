@@ -89,9 +89,18 @@ func startCommand(context *cli.Context) error {
 	wg.Add(1)
 	go func() {
 		for services := range cluster.ServicesUpdates {
-			log.Debug("got services update from cluster")
-			guard.ConfigureServices(services)
-			guard.Reload()
+			log.Info("got services update from cluster")
+			err := guard.ConfigureServices(services)
+			if err != nil {
+				log.Errorf("failed to configure guard post cluster update: %v", err)
+				continue
+			}
+
+			err = guard.Reload()
+			if err != nil {
+				log.Errorf("failed to reload post cluster update: %v", err)
+				continue
+			}
 		}
 	}()
 
@@ -101,7 +110,10 @@ func startCommand(context *cli.Context) error {
 		for status := range guard.StatusUpdates {
 			if status.Err == nil {
 				log.Debugf("got update for monitor '%s' (%s) for service '%s' (%s): %s", status.Monitor.Name, status.Monitor.Id, status.Monitor.Service.Name, status.Monitor.Service.Id, status.Status)
-				cluster.BroadcastStatusUpdate(status.Monitor.Service.Id, status.Monitor.Id, status.Status)
+				err := cluster.BroadcastStatusUpdate(status.Monitor.Service.Id, status.Monitor.Id, status.Status)
+				if err != nil {
+					log.Errorf("failed to broadcast status update: %v", err)
+				}
 			} else {
 				log.Warningf("monitor '%s' (%s) for service service '%s' (%s) failed: %v", status.Monitor.Name, status.Monitor.Id, status.Monitor.Service.Name, status.Monitor.Service.Id, status.Err)
 			}
