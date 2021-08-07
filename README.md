@@ -273,11 +273,15 @@ make format
 make lint
 # Vet the code
 make vet
+# Check the code for security issues
+make gosec
 
 ## Testing
 
 # Run tests
 make test
 ```
+
+To simplify development, `vet`, `gosec` and `test` are all run by executing `make check`.
 
 _Note: due to a bug (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=93082, https://bugs.llvm.org/show_bug.cgi?id=44406, https://openradar.appspot.com/radar?id=4952611266494464), clang is required when building for macOS. GCC cannot be used._
