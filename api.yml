@@ -340,11 +340,27 @@ components:
     MonitorStatus:
       type: object
       required:
-        - status
+        - up
+        - down
+        - transitioningUp
+        - transitioningDown
+        - unknown
       properties:
-        status:
-          type: string
-          description: The current status of the monitor
+        up:
+          type: integer
+          description: The number of cluster members voting for up
+        down:
+          type: integer
+          description: The number of cluster members voting for down
+        transitioningUp:
+          type: integer
+          description: The number of cluster members voting for transitioning up
+        transitioningDown:
+          type: integer
+          description: The number of cluster members voting for transitioning down
+        unknown:
+          type: integer
+          description: The number of cluster members voting for unknown
 
     Peers:
       type: object

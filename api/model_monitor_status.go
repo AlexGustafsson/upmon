@@ -16,17 +16,29 @@ import (
 
 // MonitorStatus struct for MonitorStatus
 type MonitorStatus struct {
-	// The current status of the monitor
-	Status string `json:"status"`
+	// The number of cluster members voting for up
+	Up int32 `json:"up"`
+	// The number of cluster members voting for down
+	Down int32 `json:"down"`
+	// The number of cluster members voting for transitioning up
+	TransitioningUp int32 `json:"transitioningUp"`
+	// The number of cluster members voting for transitioning down
+	TransitioningDown int32 `json:"transitioningDown"`
+	// The number of cluster members voting for unknown
+	Unknown int32 `json:"unknown"`
 }
 
 // NewMonitorStatus instantiates a new MonitorStatus object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewMonitorStatus(status string) *MonitorStatus {
+func NewMonitorStatus(up int32, down int32, transitioningUp int32, transitioningDown int32, unknown int32) *MonitorStatus {
 	this := MonitorStatus{}
-	this.Status = status
+	this.Up = up
+	this.Down = down
+	this.TransitioningUp = transitioningUp
+	this.TransitioningDown = transitioningDown
+	this.Unknown = unknown
 	return &this
 }
 
@@ -38,34 +50,142 @@ func NewMonitorStatusWithDefaults() *MonitorStatus {
 	return &this
 }
 
-// GetStatus returns the Status field value
-func (o *MonitorStatus) GetStatus() string {
+// GetUp returns the Up field value
+func (o *MonitorStatus) GetUp() int32 {
 	if o == nil {
-		var ret string
+		var ret int32
 		return ret
 	}
 
-	return o.Status
+	return o.Up
 }
 
-// GetStatusOk returns a tuple with the Status field value
+// GetUpOk returns a tuple with the Up field value
 // and a boolean to check if the value has been set.
-func (o *MonitorStatus) GetStatusOk() (*string, bool) {
+func (o *MonitorStatus) GetUpOk() (*int32, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.Status, true
+	return &o.Up, true
 }
 
-// SetStatus sets field value
-func (o *MonitorStatus) SetStatus(v string) {
-	o.Status = v
+// SetUp sets field value
+func (o *MonitorStatus) SetUp(v int32) {
+	o.Up = v
+}
+
+// GetDown returns the Down field value
+func (o *MonitorStatus) GetDown() int32 {
+	if o == nil {
+		var ret int32
+		return ret
+	}
+
+	return o.Down
+}
+
+// GetDownOk returns a tuple with the Down field value
+// and a boolean to check if the value has been set.
+func (o *MonitorStatus) GetDownOk() (*int32, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.Down, true
+}
+
+// SetDown sets field value
+func (o *MonitorStatus) SetDown(v int32) {
+	o.Down = v
+}
+
+// GetTransitioningUp returns the TransitioningUp field value
+func (o *MonitorStatus) GetTransitioningUp() int32 {
+	if o == nil {
+		var ret int32
+		return ret
+	}
+
+	return o.TransitioningUp
+}
+
+// GetTransitioningUpOk returns a tuple with the TransitioningUp field value
+// and a boolean to check if the value has been set.
+func (o *MonitorStatus) GetTransitioningUpOk() (*int32, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.TransitioningUp, true
+}
+
+// SetTransitioningUp sets field value
+func (o *MonitorStatus) SetTransitioningUp(v int32) {
+	o.TransitioningUp = v
+}
+
+// GetTransitioningDown returns the TransitioningDown field value
+func (o *MonitorStatus) GetTransitioningDown() int32 {
+	if o == nil {
+		var ret int32
+		return ret
+	}
+
+	return o.TransitioningDown
+}
+
+// GetTransitioningDownOk returns a tuple with the TransitioningDown field value
+// and a boolean to check if the value has been set.
+func (o *MonitorStatus) GetTransitioningDownOk() (*int32, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.TransitioningDown, true
+}
+
+// SetTransitioningDown sets field value
+func (o *MonitorStatus) SetTransitioningDown(v int32) {
+	o.TransitioningDown = v
+}
+
+// GetUnknown returns the Unknown field value
+func (o *MonitorStatus) GetUnknown() int32 {
+	if o == nil {
+		var ret int32
+		return ret
+	}
+
+	return o.Unknown
+}
+
+// GetUnknownOk returns a tuple with the Unknown field value
+// and a boolean to check if the value has been set.
+func (o *MonitorStatus) GetUnknownOk() (*int32, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.Unknown, true
+}
+
+// SetUnknown sets field value
+func (o *MonitorStatus) SetUnknown(v int32) {
+	o.Unknown = v
 }
 
 func (o MonitorStatus) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
-		toSerialize["status"] = o.Status
+		toSerialize["up"] = o.Up
+	}
+	if true {
+		toSerialize["down"] = o.Down
+	}
+	if true {
+		toSerialize["transitioningUp"] = o.TransitioningUp
+	}
+	if true {
+		toSerialize["transitioningDown"] = o.TransitioningDown
+	}
+	if true {
+		toSerialize["unknown"] = o.Unknown
 	}
 	return json.Marshal(toSerialize)
 }

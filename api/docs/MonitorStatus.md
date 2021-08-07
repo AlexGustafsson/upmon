@@ -4,13 +4,17 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Status** | **string** | The current status of the monitor | 
+**Up** | **int32** | The number of cluster members voting for up | 
+**Down** | **int32** | The number of cluster members voting for down | 
+**TransitioningUp** | **int32** | The number of cluster members voting for transitioning up | 
+**TransitioningDown** | **int32** | The number of cluster members voting for transitioning down | 
+**Unknown** | **int32** | The number of cluster members voting for unknown | 
 
 ## Methods
 
 ### NewMonitorStatus
 
-`func NewMonitorStatus(status string, ) *MonitorStatus`
+`func NewMonitorStatus(up int32, down int32, transitioningUp int32, transitioningDown int32, unknown int32, ) *MonitorStatus`
 
 NewMonitorStatus instantiates a new MonitorStatus object
 This constructor will assign default values to properties that have it defined,
@@ -25,24 +29,104 @@ NewMonitorStatusWithDefaults instantiates a new MonitorStatus object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetStatus
+### GetUp
 
-`func (o *MonitorStatus) GetStatus() string`
+`func (o *MonitorStatus) GetUp() int32`
 
-GetStatus returns the Status field if non-nil, zero value otherwise.
+GetUp returns the Up field if non-nil, zero value otherwise.
 
-### GetStatusOk
+### GetUpOk
 
-`func (o *MonitorStatus) GetStatusOk() (*string, bool)`
+`func (o *MonitorStatus) GetUpOk() (*int32, bool)`
 
-GetStatusOk returns a tuple with the Status field if it's non-nil, zero value otherwise
+GetUpOk returns a tuple with the Up field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetStatus
+### SetUp
 
-`func (o *MonitorStatus) SetStatus(v string)`
+`func (o *MonitorStatus) SetUp(v int32)`
 
-SetStatus sets Status field to given value.
+SetUp sets Up field to given value.
+
+
+### GetDown
+
+`func (o *MonitorStatus) GetDown() int32`
+
+GetDown returns the Down field if non-nil, zero value otherwise.
+
+### GetDownOk
+
+`func (o *MonitorStatus) GetDownOk() (*int32, bool)`
+
+GetDownOk returns a tuple with the Down field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetDown
+
+`func (o *MonitorStatus) SetDown(v int32)`
+
+SetDown sets Down field to given value.
+
+
+### GetTransitioningUp
+
+`func (o *MonitorStatus) GetTransitioningUp() int32`
+
+GetTransitioningUp returns the TransitioningUp field if non-nil, zero value otherwise.
+
+### GetTransitioningUpOk
+
+`func (o *MonitorStatus) GetTransitioningUpOk() (*int32, bool)`
+
+GetTransitioningUpOk returns a tuple with the TransitioningUp field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetTransitioningUp
+
+`func (o *MonitorStatus) SetTransitioningUp(v int32)`
+
+SetTransitioningUp sets TransitioningUp field to given value.
+
+
+### GetTransitioningDown
+
+`func (o *MonitorStatus) GetTransitioningDown() int32`
+
+GetTransitioningDown returns the TransitioningDown field if non-nil, zero value otherwise.
+
+### GetTransitioningDownOk
+
+`func (o *MonitorStatus) GetTransitioningDownOk() (*int32, bool)`
+
+GetTransitioningDownOk returns a tuple with the TransitioningDown field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetTransitioningDown
+
+`func (o *MonitorStatus) SetTransitioningDown(v int32)`
+
+SetTransitioningDown sets TransitioningDown field to given value.
+
+
+### GetUnknown
+
+`func (o *MonitorStatus) GetUnknown() int32`
+
+GetUnknown returns the Unknown field if non-nil, zero value otherwise.
+
+### GetUnknownOk
+
+`func (o *MonitorStatus) GetUnknownOk() (*int32, bool)`
+
+GetUnknownOk returns a tuple with the Unknown field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetUnknown
+
+`func (o *MonitorStatus) SetUnknown(v int32)`
+
+SetUnknown sets Unknown field to given value.
 
 
 

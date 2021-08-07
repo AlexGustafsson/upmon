@@ -472,14 +472,22 @@ components:
           id: id
           type: type
           status:
-            status: status
+            up: 0
+            transitioningDown: 5
+            down: 6
+            transitioningUp: 1
+            unknown: 5
         - service: service
           name: name
           description: description
           id: id
           type: type
           status:
-            status: status
+            up: 0
+            transitioningDown: 5
+            down: 6
+            transitioningUp: 1
+            unknown: 5
       properties:
         monitors:
           items:
@@ -496,7 +504,11 @@ components:
         id: id
         type: type
         status:
-          status: status
+          up: 0
+          transitioningDown: 5
+          down: 6
+          transitioningUp: 1
+          unknown: 5
       properties:
         id:
           description: An identifier for the monitor, unique for the service
@@ -525,13 +537,33 @@ components:
       type: object
     MonitorStatus:
       example:
-        status: status
+        up: 0
+        transitioningDown: 5
+        down: 6
+        transitioningUp: 1
+        unknown: 5
       properties:
-        status:
-          description: The current status of the monitor
-          type: string
+        up:
+          description: The number of cluster members voting for up
+          type: integer
+        down:
+          description: The number of cluster members voting for down
+          type: integer
+        transitioningUp:
+          description: The number of cluster members voting for transitioning up
+          type: integer
+        transitioningDown:
+          description: The number of cluster members voting for transitioning down
+          type: integer
+        unknown:
+          description: The number of cluster members voting for unknown
+          type: integer
       required:
-      - status
+      - down
+      - transitioningDown
+      - transitioningUp
+      - unknown
+      - up
       type: object
     Peers:
       example:

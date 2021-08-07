@@ -6,6 +6,7 @@ import (
 	"github.com/AlexGustafsson/upmon/api"
 	"github.com/AlexGustafsson/upmon/internal/clustering"
 	"github.com/AlexGustafsson/upmon/internal/configuration"
+	"github.com/AlexGustafsson/upmon/monitoring"
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
 )
@@ -322,8 +323,13 @@ func (server *Server) Start(bind string) error {
 			return c.Status(404).Send(json)
 		}
 
+		status := monitor.Status()
+
 		response := api.MonitorStatus{
-			Status: monitor.Status().String(),
+			Up:                int32(status.Occurances(monitoring.StatusUp)),
+			Down:              int32(status.Occurances(monitoring.StatusDown)),
+			TransitioningUp:   int32(status.Occurances(monitoring.StatusTransitioningUp)),
+			TransitioningDown: int32(status.Occurances(monitoring.StatusTransitioningDown)),
 		}
 		json, err := response.MarshalJSON()
 		if err != nil {

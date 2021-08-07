@@ -29,6 +29,13 @@ type Monitor struct {
 	Statuses map[string]monitoring.Status
 }
 
+type ServiceStatus struct {
+}
+
+type MonitorStatus struct {
+	Statuses map[monitoring.Status]int
+}
+
 func NewStore() *Store {
 	return &Store{
 		Origins: make(map[string]*Origin),
@@ -132,15 +139,32 @@ func (service *Service) Status() monitoring.Status {
 	return monitoring.StatusUnknown
 }
 
-func (monitor *Monitor) Status() monitoring.Status {
-	if len(monitor.Statuses) == 0 {
-		return monitoring.StatusUnknown
+func (monitor *Monitor) Status() *MonitorStatus {
+	result := &MonitorStatus{
+		Statuses: make(map[monitoring.Status]int),
 	}
 
-	// TODO: Merge concensus?
-	return monitoring.StatusUnknown
+	for _, status := range monitor.Statuses {
+		count, ok := result.Statuses[status]
+		if !ok {
+			count = 0
+			result.Statuses[status] = 0
+		}
+		result.Statuses[status] = count + 1
+	}
+
+	return result
 }
 
 func (monitor *Monitor) SetStatusForNode(id string, status monitoring.Status) {
 	monitor.Statuses[id] = status
+}
+
+func (monitorStatus *MonitorStatus) Occurances(status monitoring.Status) int {
+	occurances, ok := monitorStatus.Statuses[status]
+	if !ok {
+		return 0
+	}
+
+	return occurances
 }
