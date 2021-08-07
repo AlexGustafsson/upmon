@@ -100,10 +100,10 @@ func startCommand(context *cli.Context) error {
 	go func() {
 		for status := range guard.StatusUpdates {
 			if status.Err == nil {
-				log.Debugf("got update for monitor '%s' (%s) for service '%s' (%s): %s", status.Monitor.Name, status.Monitor.Id, status.Monitor.Service.Name, status.Monitor.Service.Id, config.Name, status.Status)
+				log.Debugf("got update for monitor '%s' (%s) for service '%s' (%s): %s", status.Monitor.Name, status.Monitor.Id, status.Monitor.Service.Name, status.Monitor.Service.Id, status.Status)
 				cluster.BroadcastStatusUpdate(status.Monitor.Service.Id, status.Monitor.Id, status.Status)
 			} else {
-				log.Warningf("monitor '%s' (%s) for service service '%s' failed: %v", status.Monitor.Name, status.Monitor.Id, status.Monitor.Service.Name, status.Monitor.Service.Id, status.Err)
+				log.Warningf("monitor '%s' (%s) for service service '%s' (%s) failed: %v", status.Monitor.Name, status.Monitor.Id, status.Monitor.Service.Name, status.Monitor.Service.Id, status.Err)
 			}
 		}
 	}()
