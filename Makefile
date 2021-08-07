@@ -44,9 +44,18 @@ format: $(server_source) Makefile
 lint: $(server_source) Makefile
 	golint .
 
+# Check the Go code for issues
+check: vet gosec test
+
 # Vet Go code
 vet: $(server_source) Makefile
 	go vet ./...
+
+# Check the code for security issues
+# Requires gosec
+# https://github.com/securego/gosec
+gosec: $(server_source) Makefile
+	gosec -exclude-dir=api ./...
 
 # Test Go code
 test: $(server_source) Makefile
