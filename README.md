@@ -143,7 +143,7 @@ INFO starting API server on 127.0.0.1:8080         node="Alfa"
 INFO starting all monitors                         node="Alfa"
 ```
 
-Upmon is now up and running and will monitor your services, distributing its configuration and status to peers on the cluster. An
+Upmon is now up and running and will monitor your services, distributing its configuration and status to peers on the cluster.
 
 ### Configuration
 
