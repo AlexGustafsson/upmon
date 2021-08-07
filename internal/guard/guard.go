@@ -12,7 +12,7 @@ import (
 // Guard is a monitoring manager
 type Guard struct {
 	sync.Mutex
-	configuredServices []configuration.ServiceConfiguration
+	configuredServices []*configuration.ServiceConfiguration
 	configuredMonitors []*monitoring.Monitor
 	activeMonitors     []*monitoring.Monitor
 	StatusUpdates      chan *monitoring.MonitorStatus
@@ -21,7 +21,7 @@ type Guard struct {
 func NewGuard() *Guard {
 	guard := &Guard{
 		StatusUpdates:      make(chan *monitoring.MonitorStatus),
-		configuredServices: make([]configuration.ServiceConfiguration, 0),
+		configuredServices: make([]*configuration.ServiceConfiguration, 0),
 		configuredMonitors: make([]*monitoring.Monitor, 0),
 		activeMonitors:     make([]*monitoring.Monitor, 0),
 	}
@@ -30,7 +30,7 @@ func NewGuard() *Guard {
 }
 
 // ConfigureServices sets up the configured monitors. Use Reload to apply the configuration
-func (guard *Guard) ConfigureServices(services []configuration.ServiceConfiguration) error {
+func (guard *Guard) ConfigureServices(services []*configuration.ServiceConfiguration) error {
 	guard.Lock()
 	defer guard.Unlock()
 

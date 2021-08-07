@@ -51,9 +51,9 @@ func (delegate *memberlistDelegate) NotifyMsg(data []byte) {
 
 	switch envelope.MessageType {
 	case ConfigUpdate:
-		delegate.cluster.updateConfig(envelope)
+		delegate.cluster.updateConfig(envelope.Message.(*ConfigUpdateMessage))
 	case StatusUpdate:
-		delegate.cluster.updateStatus(envelope)
+		delegate.cluster.updateStatus(envelope.Message.(*StatusUpdateMessage))
 	default:
 		log.Errorf("got unknown message type from node '%s': %d", envelope.Sender, envelope.MessageType)
 	}

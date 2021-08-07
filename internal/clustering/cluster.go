@@ -14,7 +14,7 @@ import (
 
 type ClusterMember struct {
 	ServicesVersion int
-	Services        []configuration.ServiceConfiguration
+	Services        []*configuration.ServiceConfiguration
 }
 
 type Cluster struct {
@@ -23,7 +23,7 @@ type Cluster struct {
 	broadcastQueue  memberlist.TransmitLimitedQueue
 	Memberlist      *memberlist.Memberlist
 	Members         map[string]*ClusterMember
-	ServicesUpdates chan []configuration.ServiceConfiguration
+	ServicesUpdates chan []*configuration.ServiceConfiguration
 }
 
 func NewCluster(config *configuration.Configuration) (*Cluster, error) {
@@ -37,7 +37,7 @@ func NewCluster(config *configuration.Configuration) (*Cluster, error) {
 		self:            config.Name,
 		config:          config,
 		Members:         members,
-		ServicesUpdates: make(chan []configuration.ServiceConfiguration),
+		ServicesUpdates: make(chan []*configuration.ServiceConfiguration),
 	}
 
 	memberlistConfig, err := config.MemberlistConfig()
@@ -80,6 +80,7 @@ func (cluster *Cluster) welcome(node *memberlist.Node) {
 		Sender:      cluster.self,
 		MessageType: ConfigUpdate,
 		Message: &ConfigUpdateMessage{
+			Node:     cluster.self,
 			Version:  0,
 			Services: cluster.config.Services,
 		},
@@ -109,16 +110,15 @@ func (cluster *Cluster) Status() ClusterStatus {
 	return ClusterStatusUnhealthy
 }
 
-func (cluster *Cluster) updateConfig(envelope *Envelope) {
-	configUpdate := envelope.Message.(*ConfigUpdateMessage)
-	log.Debugf("Received config update message from '%s', version %d", envelope.Sender, configUpdate.Version)
-	if member, ok := cluster.Members[envelope.Sender]; ok {
+func (cluster *Cluster) updateConfig(configUpdate *ConfigUpdateMessage) {
+	log.Debugf("Received config update message from '%s', version %d", configUpdate.Node, configUpdate.Version)
+	if member, ok := cluster.Members[configUpdate.Node]; ok {
 		if configUpdate.Version > member.ServicesVersion {
 			member.Services = configUpdate.Services
 			cluster.ServicesUpdates <- cluster.Services()
 		}
 	} else {
-		cluster.Members[envelope.Sender] = &ClusterMember{
+		cluster.Members[configUpdate.Node] = &ClusterMember{
 			ServicesVersion: configUpdate.Version,
 			Services:        configUpdate.Services,
 		}
@@ -127,8 +127,8 @@ func (cluster *Cluster) updateConfig(envelope *Envelope) {
 }
 
 // Services specifies the combined monitored services of the cluster
-func (cluster *Cluster) Services() []configuration.ServiceConfiguration {
-	services := make([]configuration.ServiceConfiguration, 0)
+func (cluster *Cluster) Services() []*configuration.ServiceConfiguration {
+	services := make([]*configuration.ServiceConfiguration, 0)
 
 	for _, member := range cluster.Members {
 		services = append(services, member.Services...)
@@ -137,7 +137,7 @@ func (cluster *Cluster) Services() []configuration.ServiceConfiguration {
 	return services
 }
 
-func (cluster *Cluster) BroadcastStatusUpdate(serviceId string, monitorId string, status monitoring.Status) error {
+func (cluster *Cluster) BroadcastStatusUpdate(origin string, serviceId string, monitorId string, status monitoring.Status) error {
 	log.WithFields(log.Fields{"service": serviceId, "monitor": monitorId, "status": status.String()}).Debugf("broadcasting status")
 	envelope := &Envelope{
 		Sender:      cluster.self,
@@ -145,6 +145,7 @@ func (cluster *Cluster) BroadcastStatusUpdate(serviceId string, monitorId string
 		Message: &StatusUpdateMessage{
 			Timestamp: time.Now().Unix(),
 			Node:      cluster.self,
+			Origin:    origin,
 			ServiceId: serviceId,
 			MonitorId: monitorId,
 			Status:    status,
@@ -167,7 +168,6 @@ func (cluster *Cluster) BroadcastStatusUpdate(serviceId string, monitorId string
 	return nil
 }
 
-func (cluster *Cluster) updateStatus(envelope *Envelope) {
-	statusUpdate := envelope.Message.(*StatusUpdateMessage)
-	log.Debugf("Received status update message from '%s' for node '%s', service %s, monitor %s: %s", envelope.Sender, statusUpdate.Node, statusUpdate.ServiceId, statusUpdate.MonitorId, statusUpdate.Status.String())
+func (cluster *Cluster) updateStatus(statusUpdate *StatusUpdateMessage) {
+	log.Debugf("Received status update message from '%s' for node '%s', service %s, monitor %s: %s", statusUpdate.Node, statusUpdate.Origin, statusUpdate.ServiceId, statusUpdate.MonitorId, statusUpdate.Status.String())
 }

@@ -28,12 +28,14 @@ type Envelope struct {
 
 type ConfigUpdateMessage struct {
 	Version  int
-	Services []configuration.ServiceConfiguration
+	Node     string
+	Services []*configuration.ServiceConfiguration
 }
 
 type StatusUpdateMessage struct {
 	Timestamp int64
 	Node      string
+	Origin    string
 	ServiceId string
 	MonitorId string
 	Status    monitoring.Status
@@ -58,7 +60,7 @@ func (envelope *Envelope) Bytes() []byte {
 func (message *ConfigUpdateMessage) Invalidates(other Message) bool {
 	switch otherMessage := other.(type) {
 	case *ConfigUpdateMessage:
-		return message.Version > otherMessage.Version
+		return message.Node == otherMessage.Node && message.Version > otherMessage.Version
 	default:
 		return false
 	}
@@ -67,7 +69,7 @@ func (message *ConfigUpdateMessage) Invalidates(other Message) bool {
 func (message *StatusUpdateMessage) Invalidates(other Message) bool {
 	switch otherMessage := other.(type) {
 	case *StatusUpdateMessage:
-		return message.Timestamp > otherMessage.Timestamp && message.Node == otherMessage.Node && message.ServiceId == otherMessage.ServiceId && message.MonitorId == otherMessage.MonitorId
+		return message.Timestamp > otherMessage.Timestamp && message.Origin == otherMessage.Origin && message.ServiceId == otherMessage.ServiceId && message.MonitorId == otherMessage.MonitorId
 	default:
 		return false
 	}

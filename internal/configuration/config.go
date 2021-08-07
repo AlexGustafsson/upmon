@@ -30,7 +30,7 @@ type ServiceConfiguration struct {
 	// Description is a description of the service
 	Description string `koanf:"description"`
 	// Monitors is a list of monitors to use to monitor the service
-	Monitors []MonitorConfiguration `koanf:"monitors"`
+	Monitors []*MonitorConfiguration `koanf:"monitors"`
 	// Private indicates whether or not the service configuration is shared with the cluster
 	Private bool `koan:"private"`
 	// Origin is the node from which this service is configured
@@ -46,7 +46,7 @@ type Configuration struct {
 	// Peers is a list of peers' bind addresses and ports
 	Peers []string `koanf:"peers"`
 	// Services contains all the configured services, mapped by their name
-	Services []ServiceConfiguration `koanf:"services"`
+	Services []*ServiceConfiguration `koanf:"services"`
 	// Api contains configuration for the REST API
 	Api struct {
 		// Enabled controls whether or not the REST API is enabled
