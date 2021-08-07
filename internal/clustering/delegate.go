@@ -37,9 +37,9 @@ func (delegate *memberlistDelegate) NodeMeta(limit int) []byte {
 	return bytes
 }
 
+// RegisterGobNames must be called first
 func (delegate *memberlistDelegate) NotifyMsg(data []byte) {
 	reader := bytes.NewReader(data)
-	gob.Register(ConfigUpdateMessage{})
 	encoder := gob.NewDecoder(reader)
 
 	envelope := &Envelope{}
@@ -52,15 +52,15 @@ func (delegate *memberlistDelegate) NotifyMsg(data []byte) {
 	switch envelope.MessageType {
 	case ConfigUpdate:
 		delegate.cluster.updateConfig(envelope)
+	case StatusUpdate:
+		delegate.cluster.updateStatus(envelope)
 	default:
-		log.Errorf("Got unknown message type from node '%s': %d", envelope.Sender, envelope.MessageType)
+		log.Errorf("got unknown message type from node '%s': %d", envelope.Sender, envelope.MessageType)
 	}
 }
 
-func (delegate *memberlistDelegate) GetBroadcasts(overhead, limit int) [][]byte {
-	// No use of broadcasts for now
-	broadcasts := make([][]byte, 0)
-	return broadcasts
+func (delegate *memberlistDelegate) GetBroadcasts(overhead int, limit int) [][]byte {
+	return delegate.cluster.broadcastQueue.GetBroadcasts(overhead, limit)
 }
 
 func (delegate *memberlistDelegate) LocalState(join bool) []byte {

@@ -48,6 +48,7 @@ func startCommand(context *cli.Context) error {
 		},
 	})
 
+	clustering.RegisterGobNames()
 	cluster, err := clustering.NewCluster(config)
 	if err != nil {
 		return err

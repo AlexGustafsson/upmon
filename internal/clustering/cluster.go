@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"io/ioutil"
+	"time"
 
 	"github.com/AlexGustafsson/upmon/internal/configuration"
 	"github.com/AlexGustafsson/upmon/monitoring"
@@ -19,26 +20,10 @@ type ClusterMember struct {
 type Cluster struct {
 	self            string
 	config          *configuration.Configuration
+	broadcastQueue  memberlist.TransmitLimitedQueue
 	Memberlist      *memberlist.Memberlist
 	Members         map[string]*ClusterMember
 	ServicesUpdates chan []configuration.ServiceConfiguration
-}
-
-type MessageType int
-
-const (
-	ConfigUpdate MessageType = iota
-)
-
-type Envelope struct {
-	Sender      string
-	MessageType MessageType
-	Message     interface{}
-}
-
-type ConfigUpdateMessage struct {
-	Version  int
-	Services []configuration.ServiceConfiguration
 }
 
 func NewCluster(config *configuration.Configuration) (*Cluster, error) {
@@ -76,6 +61,9 @@ func NewCluster(config *configuration.Configuration) (*Cluster, error) {
 
 	cluster.Memberlist = memberlist
 
+	cluster.broadcastQueue.NumNodes = cluster.Memberlist.NumMembers
+	cluster.broadcastQueue.RetransmitMult = 1
+
 	return cluster, nil
 }
 
@@ -91,14 +79,13 @@ func (cluster *Cluster) welcome(node *memberlist.Node) {
 	envelope := &Envelope{
 		Sender:      cluster.self,
 		MessageType: ConfigUpdate,
-		Message: ConfigUpdateMessage{
+		Message: &ConfigUpdateMessage{
 			Version:  0,
 			Services: cluster.config.Services,
 		},
 	}
 
 	data := bytes.NewBuffer(nil)
-	gob.Register(ConfigUpdateMessage{})
 	encoder := gob.NewEncoder(data)
 	err := encoder.Encode(envelope)
 	if err != nil {
@@ -123,7 +110,7 @@ func (cluster *Cluster) Status() ClusterStatus {
 }
 
 func (cluster *Cluster) updateConfig(envelope *Envelope) {
-	configUpdate := envelope.Message.(ConfigUpdateMessage)
+	configUpdate := envelope.Message.(*ConfigUpdateMessage)
 	log.Debugf("Received config update message from '%s', version %d", envelope.Sender, configUpdate.Version)
 	if member, ok := cluster.Members[envelope.Sender]; ok {
 		if configUpdate.Version > member.ServicesVersion {
@@ -152,5 +139,35 @@ func (cluster *Cluster) Services() []configuration.ServiceConfiguration {
 
 func (cluster *Cluster) BroadcastStatusUpdate(serviceId string, monitorId string, status monitoring.Status) error {
 	log.WithFields(log.Fields{"service": serviceId, "monitor": monitorId, "status": status.String()}).Debugf("broadcasting status")
+	envelope := &Envelope{
+		Sender:      cluster.self,
+		MessageType: StatusUpdate,
+		Message: &StatusUpdateMessage{
+			Timestamp: time.Now().Unix(),
+			Node:      cluster.self,
+			ServiceId: serviceId,
+			MonitorId: monitorId,
+			Status:    status,
+		},
+	}
+
+	data := bytes.NewBuffer(nil)
+	encoder := gob.NewEncoder(data)
+	err := encoder.Encode(envelope)
+	if err != nil {
+		return err
+	}
+
+	broadcast := &Broadcast{
+		Envelope: envelope,
+	}
+
+	cluster.broadcastQueue.QueueBroadcast(broadcast)
+
 	return nil
+}
+
+func (cluster *Cluster) updateStatus(envelope *Envelope) {
+	statusUpdate := envelope.Message.(*StatusUpdateMessage)
+	log.Debugf("Received status update message from '%s' for node '%s', service %s, monitor %s: %s", envelope.Sender, statusUpdate.Node, statusUpdate.ServiceId, statusUpdate.MonitorId, statusUpdate.Status.String())
 }
