@@ -40,9 +40,9 @@ Upcoming.
 
 ## Documentation
 
-For now see the docs folder.
+Please view [the docs on GitHub pages](https://alexgustafsson.github.io/upmon) or see them in the `docs` folder.
 
-To view it in your browser, first install docsify by executing `npm install --global docsify-cli` and then run `docsify serve docs` in the project's folder.
+To view them offline in your browser, first install docsify by executing `npm install --global docsify-cli` and then run `docsify serve docs` in the project's folder.
 
 ## Contributing
 <a name="contributing"></a>
