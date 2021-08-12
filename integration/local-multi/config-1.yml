@@ -32,3 +32,13 @@ services:
           hostname: google.com
           expectedStatus: 200
           timeout: 1s
+  - id: localhost
+    name: "Localhost"
+    description: "Private localhost monitoring"
+    private: true
+    monitors:
+      - type: ping
+        id: ping
+        description: "Ensure that the loopback interface works"
+        options:
+          hostname: localhost

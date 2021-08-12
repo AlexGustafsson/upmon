@@ -90,14 +90,21 @@ func (cluster *Cluster) Join(peers []string) error {
 func (cluster *Cluster) welcome(node *memberlist.Node) {
 	log.WithFields(log.Fields{"name": node.Name}).Info("welcoming node")
 
-	// TODO: Only send public services
+	// Only distribute public services
+	publicServices := make([]*configuration.ServiceConfiguration, 0)
+	for _, service := range cluster.config.Services {
+		if !service.Private {
+			publicServices = append(publicServices, service)
+		}
+	}
+
 	envelope := &Envelope{
 		Sender:      cluster.self,
 		MessageType: ConfigUpdate,
 		Message: &ConfigUpdateMessage{
 			Node:     cluster.self,
 			Version:  0,
-			Services: cluster.config.Services,
+			Services: publicServices,
 		},
 	}
 
