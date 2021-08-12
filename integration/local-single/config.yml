@@ -1,0 +1,30 @@
+bind: "127.0.0.1:7070"
+api:
+  enabled: true
+  bind: "127.0.0.1:8080"
+services:
+  - id: google
+    name: "Google"
+    description: "Google monitoring"
+    private: false
+    monitors:
+      - type: dns
+        id: dns
+        name: "DNS check"
+        description: "Make sure DNS resolves"
+        options:
+          hostname: google.com
+      - type: ping
+        id: ping
+        description: "Ensure that the target is reachable"
+        options:
+          hostname: google.com
+          count: 1
+          timeout: 1s
+          interval: 1s
+      - type: http
+        id: http
+        options:
+          hostname: google.com
+          expectedStatus: 200
+          timeout: 1s

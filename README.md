@@ -150,6 +150,7 @@ Upmon is now up and running and will monitor your services, distributing its con
 Below you may find a documented example configuration. Further examples may be found in the integration directory.
 
 ```yaml
+# The name is optional and will default to the node's hostname
 name: Alfa
 # Listen for node-to-node traffic on localhost, port 7070
 bind: "127.0.0.1:7070"

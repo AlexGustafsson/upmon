@@ -2,6 +2,7 @@ package configuration
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
@@ -33,6 +34,14 @@ func Load(filePath string) (*Configuration, error) {
 	err = k.UnmarshalWithConf("", &config, koanf.UnmarshalConf{Tag: "koanf"})
 	if err != nil {
 		return nil, err
+	}
+
+	// If no name is set, default to the hostname
+	if config.Name == "" {
+		name, err := os.Hostname()
+		if err == nil {
+			config.Name = name
+		}
 	}
 
 	for _, service := range config.Services {
