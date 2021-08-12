@@ -1,26 +1,26 @@
 name: Alfa
-bind: "127.0.0.1:7070"
+bind: 127.0.0.1:7070
 peers:
-  - "127.0.0.1:7171"
-  - "127.0.0.1:7272"
+  - 127.0.0.1:7171
+  - 127.0.0.1:7272
 api:
   enabled: true
-  bind: "127.0.0.1:8080"
+  bind: 127.0.0.1:8080
 services:
   - id: google
-    name: "Google"
-    description: "Google monitoring"
+    name: Google
+    description: Google monitoring
     private: false
     monitors:
       - type: dns
         id: dns
-        name: "DNS check"
-        description: "Make sure DNS resolves"
+        name: DNS check
+        description: Make sure DNS resolves
         options:
           hostname: google.com
       - type: ping
         id: ping
-        description: "Ensure that the target is reachable"
+        description: Ensure that the target is reachable
         options:
           hostname: google.com
           count: 1
@@ -33,12 +33,12 @@ services:
           expectedStatus: 200
           timeout: 1s
   - id: localhost
-    name: "Localhost"
-    description: "Private localhost monitoring"
+    name: Localhost
+    description: Private localhost monitoring
     private: true
     monitors:
       - type: ping
         id: ping
-        description: "Ensure that the loopback interface works"
+        description: Ensure that the loopback interface works
         options:
           hostname: localhost
