@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"sync"
 	"time"
@@ -71,6 +72,21 @@ func (check *Check) PerformGet() (core.Status, error) {
 
 	if check.config.Expect.Status != 0 {
 		if response.StatusCode != check.config.Expect.Status {
+			log.WithFields(log.Fields{"check": "http"}).Debugf("response status code was %d, expected %d", response.StatusCode, check.config.Expect.Status)
+			return core.StatusDown, nil
+		}
+	}
+
+	if check.config.Expect.Regex != "" {
+		body, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return core.StatusUnknown, err
+		}
+
+		matched := check.config.Expect.CompiledRegex.Match(body)
+
+		if !matched {
+			log.WithFields(log.Fields{"check": "http"}).Debugf("response body did not match expression")
 			return core.StatusDown, nil
 		}
 	}

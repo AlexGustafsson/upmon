@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/mitchellh/mapstructure"
@@ -24,6 +25,10 @@ type MonitorConfiguration struct {
 	Expect struct {
 		// Status is the expected HTTP status
 		Status int `mapstructure:"status"`
+		// Regex is a regular expression that the body should match
+		Regex string `mapstructure:"regex"`
+		// CompiledRegex is the above regex in its compiled form
+		CompiledRegex *regexp.Regexp
 	} `mapstructure:"expect"`
 }
 
@@ -65,6 +70,16 @@ func ParseConfiguration(options map[string]interface{}) (*MonitorConfiguration, 
 		config.MaximumRedirects = 10
 	}
 
+	if config.Expect.Regex != "" {
+		// Try the regex on empty
+		expression, err := regexp.Compile(config.Expect.Regex)
+		if err != nil {
+			return nil, err
+		}
+
+		config.Expect.CompiledRegex = expression
+	}
+
 	return config, nil
 }
 
@@ -77,6 +92,10 @@ func (config *MonitorConfiguration) Validate() []error {
 
 	if config.Method != "GET" {
 		errors = append(errors, fmt.Errorf("unsupported HTTP method"))
+	}
+
+	if config.Expect.Status < 0 || config.Expect.Status > 600 {
+		errors = append(errors, fmt.Errorf("invalid HTTP status"))
 	}
 
 	return errors

@@ -21,11 +21,12 @@ services:
           timeout: 1s
           interval: 1s
       - type: http
-        id:
+        id: http
         options:
           url: https://google.com
           timeout: 1s
           interval: 10s
+          followRedirects: true
           expect:
-            status: 301
-            followRedirects: true
+            status: 200
+            regex: <title>Google</title>

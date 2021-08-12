@@ -34,6 +34,7 @@ services:
           interval: 10s
           expect:
             status: 200
+            regex: <title>Google</title>
   - id: localhost
     name: Localhost
     description: Private localhost monitoring
