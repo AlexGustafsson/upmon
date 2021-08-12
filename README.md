@@ -9,7 +9,7 @@
     <img src="https://flat.badgen.net/github/release/AlexGustafsson/upmon" alt="Latest Release" />
   </a>
   <br>
-  <strong><a href="#quickstart">Quick Start</a> | <a href="#contribute">Contribute</a> </strong>
+  <strong><a href="#quickstart">Quick Start</a> | <a href="https://alexgustafsson.github.io/upmon">Documentation</a> | <a href="#contribute">Contribute</a> </strong>
 </p>
 
 # Upmon
