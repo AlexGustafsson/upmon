@@ -97,14 +97,18 @@ func (guard *Guard) startAllMonitors() {
 	// TODO: Rollback if all monitors can't start? Make atomic?
 	guard.activeMonitors = guard.activeMonitors[:0]
 
-	log.Infof("starting all monitors")
-	for _, monitor := range guard.configuredMonitors {
-		log.Infof("starting monitor '%s' (%s) for service '%s' (%s)", monitor.Name, monitor.Id, monitor.Service.Name, monitor.Service.Id)
-		err := monitor.Watch(guard.StatusUpdates)
-		if err != nil {
-			log.Warningf("failed to start watching monitor '%s' (%s) for service '%s' (%s): %v", monitor.Name, monitor.Id, monitor.Service.Name, monitor.Service.Id, err)
+	if len(guard.configuredMonitors) == 0 {
+		log.Warn("no monitors configured")
+	} else {
+		log.Infof("starting all monitors")
+		for _, monitor := range guard.configuredMonitors {
+			log.Infof("starting monitor '%s' (%s) for service '%s' (%s)", monitor.Name, monitor.Id, monitor.Service.Name, monitor.Service.Id)
+			err := monitor.Watch(guard.StatusUpdates)
+			if err != nil {
+				log.Warningf("failed to start watching monitor '%s' (%s) for service '%s' (%s): %v", monitor.Name, monitor.Id, monitor.Service.Name, monitor.Service.Id, err)
+			}
+			guard.activeMonitors = append(guard.activeMonitors, monitor)
 		}
-		guard.activeMonitors = append(guard.activeMonitors, monitor)
 	}
 }
 
