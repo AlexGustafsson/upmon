@@ -17,3 +17,5 @@ The following expect clauses are available.
 | Name | Description |
 | :--: | :---------: |
 | `status` | The expected HTTP status code |
+| `followRedirects` | Whether or not to follow redirects. Defaults to `false` |
+| `maximumRedirects` | The maximum number of redirects to follow before throwing an error. Defaults to 10 |

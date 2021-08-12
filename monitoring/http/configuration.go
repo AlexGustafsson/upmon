@@ -16,6 +16,10 @@ type MonitorConfiguration struct {
 	Interval time.Duration `mapstructure:"interval"`
 	// Method is the HTTP method to use, such as "GET"
 	Method string `mapstructure:"method"`
+	// FollowRedirects specifies whether or not redirects should be followed
+	FollowRedirects bool `mapstructure:"followRedirects"`
+	// MaximumRedirects specifies the maximum number of redirects to follow before throwing an error
+	MaximumRedirects int `mapstructure:"maximumRedirects"`
 	// Expect is the matching clauses to determine an alive service
 	Expect struct {
 		// Status is the expected HTTP status
@@ -54,6 +58,11 @@ func ParseConfiguration(options map[string]interface{}) (*MonitorConfiguration, 
 	// Set the default HTTP method
 	if config.Method == "" {
 		config.Method = "GET"
+	}
+
+	// Set the default maximum redirect count
+	if config.MaximumRedirects == 0 {
+		config.MaximumRedirects = 10
 	}
 
 	return config, nil

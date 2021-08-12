@@ -48,7 +48,23 @@ func (check *Check) Perform() (core.Status, error) {
 }
 
 func (check *Check) PerformGet() (core.Status, error) {
-	response, err := http.Get(check.config.URL)
+	redirects := 0
+
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if check.config.FollowRedirects {
+				if redirects > check.config.MaximumRedirects {
+					return fmt.Errorf("maximum number of redirects exceeded")
+				}
+				redirects++
+				return nil
+			} else {
+				return http.ErrUseLastResponse
+			}
+		},
+	}
+
+	response, err := client.Get(check.config.URL)
 	if err != nil {
 		return core.StatusUnknown, err
 	}
