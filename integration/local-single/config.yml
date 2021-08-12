@@ -23,6 +23,8 @@ services:
       - type: http
         id: http
         options:
-          hostname: google.com
-          expectedStatus: 200
+          url: https://google.com
           timeout: 1s
+          interval: 10s
+          expect:
+            status: 200

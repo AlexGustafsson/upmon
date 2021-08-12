@@ -194,9 +194,11 @@ services:
       - type: http
         id: http
         options:
-          hostname: google.com
-          expectedStatus: 200
+          url: https://google.com
           timeout: 1s
+          interval: 10s
+          expect:
+            status: 200
   # Services may be private. Private services are not replicated across the cluster
   - id: private-example
     name: "LAN-only application"
@@ -225,7 +227,7 @@ The monitor has the following options.
 
 #### DNS
 
-The dns monitor resolves a hostname and determines whether or not the host is reachavble based on whether or not the name resolves.
+The DNS monitor resolves a hostname and determines whether or not the host is reachable based on whether or not the name resolves.
 
 The monitor has the following options.
 
@@ -233,6 +235,26 @@ The monitor has the following options.
 | :--: | :---------: | :------: |
 | `hostname` | The host to ping | Yes |
 | `interval` | The time to wait between each ping | No. Defaults to 1s |
+
+#### HTTP
+
+The HTTP monitor performs a HTTP request to determine whether or not a service is up and working.
+
+The monitor has the following options.
+
+| Name | Description | Required |
+| :--: | :---------: | :------: |
+| `url` | The URL to request | Yes |
+| `timeout` | The duration to wait before aborting a ping | No. Defaults to 1s |
+| `interval` | The time to wait between each ping | No. Defaults to 1s |
+| `method` | The HTTP method such as `GET` to use | No. Defaults to `GET` |
+| `expect` | An object containing the matching clauses to determine an alive service | |
+
+The following expect clauses are available.
+
+| Name | Description |
+| :--: | :---------: |
+| `status` | The expected HTTP status code |
 
 ### API
 
