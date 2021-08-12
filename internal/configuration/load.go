@@ -15,9 +15,9 @@ func Load(filePath string) (*Configuration, error) {
 	k := koanf.New(".")
 
 	defaults := confmap.Provider(map[string]interface{}{
-		"address":     "127.0.0.1",
-		"port":        "7070",
+		"bind":        "127.0.0.1:7070",
 		"api.enabled": false,
+		"api.bind":    "127.0.0.1:8080",
 	}, ".")
 	err := k.Load(defaults, nil)
 	if err != nil {

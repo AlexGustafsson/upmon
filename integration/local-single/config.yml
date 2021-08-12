@@ -1,7 +1,5 @@
-bind: "127.0.0.1:7070"
 api:
   enabled: true
-  bind: "127.0.0.1:8080"
 services:
   - id: google
     name: "Google"
