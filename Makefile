@@ -66,7 +66,7 @@ test: $(server_source) Makefile
 # Build for the native platform
 build/upmon: $(server_source) Makefile
 	go generate ./...
-	go build -tags tools $(BUILD_FLAGS) -o $@ cmd/upmon.go
+	go build $(BUILD_FLAGS) -o $@ cmd/upmon.go
 
 install-tools:
 	cat tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -tI % go install %
