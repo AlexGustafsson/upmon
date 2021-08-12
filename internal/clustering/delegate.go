@@ -15,6 +15,11 @@ type memberlistDelegate struct {
 }
 
 func (delegate *memberlistDelegate) NotifyJoin(node *memberlist.Node) {
+	// Ignore the self node
+	if node.Name == delegate.cluster.self {
+		return
+	}
+
 	log.WithFields(log.Fields{"name": node.Name, "address": node.Addr, "port": node.Port}).Info("node joined")
 	if node.Name != delegate.cluster.self {
 		delegate.cluster.welcome(node)

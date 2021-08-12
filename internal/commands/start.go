@@ -87,6 +87,9 @@ func startCommand(context *cli.Context) error {
 
 	guard := guard.NewGuard()
 
+	// Configure the node's own services
+	guard.ConfigureServices(config.Services)
+
 	wg := &sync.WaitGroup{}
 
 	// Watch for updates from cluster members
