@@ -17,7 +17,17 @@ type MonitorConfiguration struct {
 func ParseConfiguration(options map[string]interface{}) (*MonitorConfiguration, error) {
 	config := &MonitorConfiguration{}
 
-	err := mapstructure.Decode(options, config)
+	// Decode the arbitrary options with support for time.Duration parsing
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		DecodeHook:       mapstructure.ComposeDecodeHookFunc(mapstructure.StringToTimeDurationHookFunc()),
+		WeaklyTypedInput: true,
+		Metadata:         nil,
+		Result:           &config,
+	})
+	if err != nil {
+		return nil, err
+	}
+	err = decoder.Decode(options)
 	if err != nil {
 		return nil, err
 	}
