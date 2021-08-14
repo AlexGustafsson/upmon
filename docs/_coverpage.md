@@ -10,4 +10,4 @@
 - Simple (optional) API for monitoring the status of services
 
 [GitHub](https://github.com/AlexGustafsson/upmon/)
-[Get Started](/#/guide)
+[Get Started](guide.md)
