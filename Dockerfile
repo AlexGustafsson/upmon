@@ -22,4 +22,4 @@ WORKDIR /etc/upmon
 COPY --from=builder /upmon/build/upmon /usr/local/bin/upmon
 
 USER docker
-CMD ["upmon"]
+ENTRYPOINT ["upmon"]
